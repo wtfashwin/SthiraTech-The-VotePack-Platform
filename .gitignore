@@ -1,0 +1,24 @@
+# Node / JavaScript
+node_modules/
+dist/
+.env
+.env*.local
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Docker
+postgres-data/
+
+# IDE / OS specific
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
