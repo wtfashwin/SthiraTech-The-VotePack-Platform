@@ -8,7 +8,11 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from .. import config, crud, schemas, models, dependencies
+import config
+import crud
+import schemas
+import models
+import dependencies
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 

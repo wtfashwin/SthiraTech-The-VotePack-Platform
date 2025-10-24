@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from . import database, models, config
-from .routers import trips, itinerary, polling, expenses, auth, ai, payments
+import database
+import models
+import config
+from routers import trips, itinerary, polling, expenses, auth, ai, payments
 
 API_V1_PREFIX = "/api/v1"
 

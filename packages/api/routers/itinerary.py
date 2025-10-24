@@ -7,8 +7,10 @@ This file keeps all itinerary-related endpoints organized.
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from .. import crud, schemas, dependencies
-from .. import scraping_service
+import crud
+import schemas
+import dependencies
+import scraping_service
 
 router = APIRouter(
     prefix="/itinerary", # Grouping under a common prefix

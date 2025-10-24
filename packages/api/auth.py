@@ -7,7 +7,8 @@ import uuid
 import hashlib
 from jose import JWTError, jwt
 
-from . import config, schemas
+import config
+import schemas
 
 # Simple password hashing using SHA-256 (no bcrypt complications)
 def get_password_hash(password: str) -> str:
