@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PackVote 2.0 - Group Trips, Finally Organized | SthiraTech</title>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-shift': 'gradient-shift 8s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-shift': {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #2563eb, #7c3aed, #3b82f6, #8b5cf6);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mock-app-ui {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+    </style>
+</head>
+<body class="antialiased bg-slate-50 text-slate-800">
+    <div id="root"></div>
+    
+    <!-- React and Framer Motion from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+    
+    <script type="module">
+        const { useState, useEffect, useRef } = React;
+        const { motion } = window.Motion;
+        
+        // Smooth scroll function
+        const scrollToSection = (id) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+        
+        // Navigation Component
+        const Navigation = () => {
+            const [scrolled, setScrolled] = useState(false);
+            
+            useEffect(() => {
+                const handleScroll = () => {
+                    setScrolled(window.scrollY > 50);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+            
+            return React.createElement(motion.nav, {
+                initial: { y: -100 },
+                animate: { y: 0 },
+                transition: { duration: 0.6 },
+                className: `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                    scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+                }`
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement('div', { className: 'flex items-center justify-between h-20' },
+                        // Logo
+                        React.createElement('div', { className: 'flex items-center space-x-2' },
+                            React.createElement('svg', { 
+                                className: 'w-10 h-10', 
+                                viewBox: '0 0 40 40',
+                                fill: 'none',
+                                xmlns: 'http://www.w3.org/2000/svg'
+                            },
+                                React.createElement('circle', { cx: '20', cy: '20', r: '18', fill: 'url(#gradient1)' }),
+                                React.createElement('path', { 
+                                    d: 'M20 10L25 18H15L20 10Z M15 22L20 30L25 22H15Z',
+                                    fill: 'white'
+                                }),
+                                React.createElement('defs', {},
+                                    React.createElement('linearGradient', { 
+                                        id: 'gradient1', 
+                                        x1: '0', 
+                                        y1: '0', 
+                                        x2: '40', 
+                                        y2: '40'
+                                    },
+                                        React.createElement('stop', { offset: '0%', stopColor: '#2563eb' }),
+                                        React.createElement('stop', { offset: '100%', stopColor: '#7c3aed' })
+                                    )
+                                )
+                            ),
+                            React.createElement('span', { className: 'text-2xl font-bold text-gradient' }, 'SthiraTech')
+                        ),
+                        
+                        // Navigation Links
+                        React.createElement('div', { className: 'hidden md:flex items-center space-x-8' },
+                            ['Features', 'How it Works', 'Pricing'].map(item => 
+                                React.createElement('a', {
+                                    key: item,
+                                    href: `#${item.toLowerCase().replace(/\s+/g, '-')}`,
+                                    onClick: (e) => {
+                                        e.preventDefault();
+                                        scrollToSection(item.toLowerCase().replace(/\s+/g, '-'));
+                                    },
+                                    className: 'text-slate-700 hover:text-blue-600 font-medium transition-colors cursor-pointer'
+                                }, item)
+                            ),
+                            React.createElement('button', {
+                                onClick: () => scrollToSection('cta-final'),
+                                className: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300'
+                            }, 'Sign Up')
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Hero Section
+        const HeroSection = () => {
+            return React.createElement('section', {
+                id: 'hero',
+                className: 'relative min-h-screen flex items-center justify-center overflow-hidden pt-20'
+            },
+                // Animated Background
+                React.createElement('div', { className: 'absolute inset-0 gradient-bg opacity-10' }),
+                
+                React.createElement('div', { className: 'relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20' },
+                    React.createElement('div', { className: 'grid lg:grid-cols-2 gap-12 items-center' },
+                        // Left Content
+                        React.createElement(motion.div, {
+                            initial: { opacity: 0, x: -50 },
+                            animate: { opacity: 1, x: 0 },
+                            transition: { duration: 0.8 }
+                        },
+                            React.createElement('h1', { className: 'text-5xl sm:text-6xl lg:text-7xl font-black leading-tight mb-6' },
+                                'Group Trips, ',
+                                React.createElement('span', { className: 'text-gradient' }, 'Finally Organized.')
+                            ),
+                            React.createElement('p', { className: 'text-xl sm:text-2xl text-slate-600 mb-8 leading-relaxed' },
+                                'Stop juggling chats, spreadsheets, and payment apps. ',
+                                React.createElement('span', { className: 'font-semibold text-slate-800' }, 
+                                    'PackVote 2.0'
+                                ),
+                                ' brings your entire group travel plan together.'
+                            ),
+                            React.createElement(motion.button, {
+                                whileHover: { scale: 1.05 },
+                                whileTap: { scale: 0.95 },
+                                onClick: () => scrollToSection('cta-final'),
+                                className: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-bold shadow-2xl hover:shadow-purple-500/50 transition-all duration-300'
+                            }, 'Get Started for Free'),
+                            React.createElement('p', { className: 'text-sm text-slate-500 mt-4' }, 
+                                '✓ No credit card required  ✓ Free forever plan'
+                            )
+                        ),
+                        
+                        // Right - Mock App UI
+                        React.createElement(motion.div, {
+                            initial: { opacity: 0, x: 50 },
+                            animate: { opacity: 1, x: 0 },
+                            transition: { duration: 0.8, delay: 0.2 },
+                            className: 'hidden lg:block'
+                        },
+                            React.createElement('div', { className: 'mock-app-ui relative' },
+                                React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6 mb-4' },
+                                    React.createElement('div', { className: 'flex items-center space-x-3 mb-4' },
+                                        React.createElement('div', { className: 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500' }),
+                                        React.createElement('div', {},
+                                            React.createElement('div', { className: 'h-3 w-32 bg-slate-200 rounded mb-2' }),
+                                            React.createElement('div', { className: 'h-2 w-24 bg-slate-100 rounded' })
+                                        )
+                                    ),
+                                    React.createElement('div', { className: 'space-y-3' },
+                                        React.createElement('div', { className: 'h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-full' }),
+                                        React.createElement('div', { className: 'h-4 bg-slate-100 rounded w-3/4' }),
+                                        React.createElement('div', { className: 'h-4 bg-slate-100 rounded w-5/6' })
+                                    )
+                                ),
+                                React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6' },
+                                    React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                                        React.createElement('div', { className: 'h-4 w-24 bg-blue-500 rounded' }),
+                                        React.createElement('div', { className: 'h-4 w-16 bg-purple-500 rounded' })
+                                    ),
+                                    React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                                        [1, 2, 3, 4].map(i => 
+                                            React.createElement('div', { 
+                                                key: i,
+                                                className: 'h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg'
+                                            })
+                                        )
+                                    )
+                                ),
+                                React.createElement('div', { 
+                                    className: 'absolute -top-4 -right-4 w-24 h-24 bg-yellow-400 rounded-full opacity-20 animate-pulse-slow' 
+                                }),
+                                React.createElement('div', { 
+                                    className: 'absolute -bottom-6 -left-6 w-32 h-32 bg-blue-400 rounded-full opacity-20 animate-float' 
+                                })
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Features Section
+        const FeaturesSection = () => {
+            const features = [
+                {
+                    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+                    title: 'Collaborative Itinerary',
+                    description: 'Build your day-by-day plan together. Everyone contributes, everyone stays in sync. No more endless group chats.'
+                },
+                {
+                    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                    title: 'In-App Polling',
+                    description: 'Settle debates quickly with integrated polls. Beach A or Beach B? Let the group decide in seconds, not hours.'
+                },
+                {
+                    icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                    title: 'Smart Expense Tracking',
+                    description: 'Link costs to activities, see who owes whom instantly. No awkward money conversations, no spreadsheet gymnastics.'
+                }
+            ];
+            
+            return React.createElement('section', {
+                id: 'features',
+                className: 'py-24 bg-white'
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement(motion.div, {
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { duration: 0.6 },
+                        className: 'text-center mb-16'
+                    },
+                        React.createElement('h2', { className: 'text-4xl sm:text-5xl font-black mb-4' },
+                            'One App, ',
+                            React.createElement('span', { className: 'text-gradient' }, 'Zero Hassle')
+                        ),
+                        React.createElement('p', { className: 'text-xl text-slate-600 max-w-2xl mx-auto' },
+                            'Everything you need to plan, decide, and settle up. All in one beautifully simple platform.'
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'grid md:grid-cols-3 gap-8' },
+                        features.map((feature, index) => 
+                            React.createElement(motion.div, {
+                                key: index,
+                                initial: { opacity: 0, y: 30 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { duration: 0.6, delay: index * 0.15 },
+                                className: 'bg-slate-50 rounded-2xl p-8 hover-lift border border-slate-200'
+                            },
+                                React.createElement('div', { className: 'w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-6' },
+                                    React.createElement('svg', { 
+                                        className: 'w-8 h-8 text-white', 
+                                        fill: 'none', 
+                                        stroke: 'currentColor', 
+                                        viewBox: '0 0 24 24' 
+                                    },
+                                        React.createElement('path', { 
+                                            strokeLinecap: 'round', 
+                                            strokeLinejoin: 'round', 
+                                            strokeWidth: 2, 
+                                            d: feature.icon 
+                                        })
+                                    )
+                                ),
+                                React.createElement('h3', { className: 'text-2xl font-bold mb-4 text-slate-800' }, feature.title),
+                                React.createElement('p', { className: 'text-slate-600 leading-relaxed' }, feature.description)
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // How It Works Section
+        const HowItWorksSection = () => {
+            const steps = [
+                {
+                    number: '01',
+                    title: 'Create Trip',
+                    description: 'Start your plan and invite your crew. Share a simple link and everyone joins instantly.',
+                    icon: 'M12 4v16m8-8H4'
+                },
+                {
+                    number: '02',
+                    title: 'Collaborate',
+                    description: 'Build the itinerary and add activities together. Everyone can contribute ideas and suggestions.',
+                    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
+                },
+                {
+                    number: '03',
+                    title: 'Decide & Track',
+                    description: 'Use polls for quick decisions, log expenses as you go. Real-time updates keep everyone informed.',
+                    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                },
+                {
+                    number: '04',
+                    title: 'Settle Up',
+                    description: 'See who owes whom and settle balances easily. Crystal-clear breakdowns eliminate confusion.',
+                    icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'
+                }
+            ];
+            
+            return React.createElement('section', {
+                id: 'how-it-works',
+                className: 'py-24 bg-gradient-to-br from-slate-50 to-blue-50'
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement(motion.div, {
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { duration: 0.6 },
+                        className: 'text-center mb-16'
+                    },
+                        React.createElement('h2', { className: 'text-4xl sm:text-5xl font-black mb-4' },
+                            'How It ',
+                            React.createElement('span', { className: 'text-gradient' }, 'Works')
+                        ),
+                        React.createElement('p', { className: 'text-xl text-slate-600 max-w-2xl mx-auto' },
+                            'Four simple steps to transform chaotic group planning into seamless collaboration.'
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'grid md:grid-cols-2 lg:grid-cols-4 gap-8' },
+                        steps.map((step, index) => 
+                            React.createElement(motion.div, {
+                                key: index,
+                                initial: { opacity: 0, y: 30 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { duration: 0.6, delay: index * 0.1 },
+                                className: 'relative'
+                            },
+                                React.createElement('div', { className: 'bg-white rounded-2xl p-8 hover-lift shadow-lg' },
+                                    React.createElement('div', { className: 'text-6xl font-black text-gradient mb-4 opacity-20' }, step.number),
+                                    React.createElement('div', { className: 'w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4' },
+                                        React.createElement('svg', { 
+                                            className: 'w-7 h-7 text-white', 
+                                            fill: 'none', 
+                                            stroke: 'currentColor', 
+                                            viewBox: '0 0 24 24' 
+                                        },
+                                            React.createElement('path', { 
+                                                strokeLinecap: 'round', 
+                                                strokeLinejoin: 'round', 
+                                                strokeWidth: 2, 
+                                                d: step.icon 
+                                            })
+                                        )
+                                    ),
+                                    React.createElement('h3', { className: 'text-xl font-bold mb-3 text-slate-800' }, step.title),
+                                    React.createElement('p', { className: 'text-slate-600 text-sm leading-relaxed' }, step.description)
+                                ),
+                                index < steps.length - 1 && React.createElement('div', { 
+                                    className: 'hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300'
+                                })
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Testimonials Section
+        const TestimonialsSection = () => {
+            const testimonials = [
+                {
+                    quote: "PackVote completely changed how we plan our annual friend trips. No more endless WhatsApp threads!",
+                    author: "Sarah Chen",
+                    trip: "Bali Adventure 2024"
+                },
+                {
+                    quote: "The expense tracking is genius. We always struggled with splitting costs, but this made it effortless.",
+                    author: "Marcus Johnson",
+                    trip: "European Road Trip"
+                },
+                {
+                    quote: "Finally, one app that does everything. The polling feature saved us hours of debate about activities.",
+                    author: "Priya Sharma",
+                    trip: "Thailand Beach Getaway"
+                }
+            ];
+            
+            return React.createElement('section', {
+                className: 'py-24 bg-white'
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement(motion.div, {
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { duration: 0.6 },
+                        className: 'text-center mb-16'
+                    },
+                        React.createElement('h2', { className: 'text-4xl sm:text-5xl font-black mb-4' },
+                            "Don't Just Take ",
+                            React.createElement('span', { className: 'text-gradient' }, 'Our Word')
+                        ),
+                        React.createElement('p', { className: 'text-xl text-slate-600' },
+                            'Thousands of travelers are already planning better together.'
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'grid md:grid-cols-3 gap-8' },
+                        testimonials.map((testimonial, index) => 
+                            React.createElement(motion.div, {
+                                key: index,
+                                initial: { opacity: 0, y: 30 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { duration: 0.6, delay: index * 0.15 },
+                                className: 'bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 hover-lift border border-blue-100'
+                            },
+                                React.createElement('svg', { 
+                                    className: 'w-10 h-10 text-blue-500 mb-4 opacity-50', 
+                                    fill: 'currentColor', 
+                                    viewBox: '0 0 24 24' 
+                                },
+                                    React.createElement('path', { d: 'M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z' })
+                                ),
+                                React.createElement('p', { className: 'text-slate-700 text-lg mb-6 leading-relaxed italic' }, 
+                                    '"', testimonial.quote, '"'
+                                ),
+                                React.createElement('div', {},
+                                    React.createElement('p', { className: 'font-bold text-slate-800' }, testimonial.author),
+                                    React.createElement('p', { className: 'text-sm text-slate-500' }, testimonial.trip)
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Pricing Section (Placeholder)
+        const PricingSection = () => {
+            return React.createElement('section', {
+                id: 'pricing',
+                className: 'py-24 bg-gradient-to-br from-slate-50 to-purple-50'
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement(motion.div, {
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { duration: 0.6 },
+                        className: 'text-center'
+                    },
+                        React.createElement('h2', { className: 'text-4xl sm:text-5xl font-black mb-4' },
+                            'Simple, ',
+                            React.createElement('span', { className: 'text-gradient' }, 'Transparent Pricing')
+                        ),
+                        React.createElement('p', { className: 'text-xl text-slate-600 mb-12 max-w-2xl mx-auto' },
+                            'Start free, upgrade when you need more power. No hidden fees, ever.'
+                        ),
+                        
+                        React.createElement('div', { className: 'grid md:grid-cols-3 gap-8 max-w-5xl mx-auto' },
+                            [
+                                { name: 'Free', price: '$0', features: ['Up to 3 trips', 'Unlimited collaborators', 'Basic expense tracking', 'Community support'] },
+                                { name: 'Pro', price: '$9', features: ['Unlimited trips', 'Advanced analytics', 'Priority support', 'Custom branding'], highlight: true },
+                                { name: 'Team', price: '$29', features: ['Everything in Pro', 'Team management', 'API access', 'Dedicated support'] }
+                            ].map((plan, index) => 
+                                React.createElement(motion.div, {
+                                    key: index,
+                                    initial: { opacity: 0, y: 30 },
+                                    whileInView: { opacity: 1, y: 0 },
+                                    viewport: { once: true },
+                                    transition: { duration: 0.6, delay: index * 0.15 },
+                                    className: `bg-white rounded-2xl p-8 hover-lift ${plan.highlight ? 'ring-4 ring-blue-500 shadow-2xl scale-105' : 'shadow-lg'}`
+                                },
+                                    plan.highlight && React.createElement('div', { className: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold px-4 py-1 rounded-full inline-block mb-4' }, 'MOST POPULAR'),
+                                    React.createElement('h3', { className: 'text-2xl font-bold mb-2' }, plan.name),
+                                    React.createElement('div', { className: 'mb-6' },
+                                        React.createElement('span', { className: 'text-5xl font-black text-gradient' }, plan.price),
+                                        React.createElement('span', { className: 'text-slate-600' }, '/month')
+                                    ),
+                                    React.createElement('ul', { className: 'space-y-3 mb-8' },
+                                        plan.features.map((feature, i) => 
+                                            React.createElement('li', { key: i, className: 'flex items-center text-slate-600' },
+                                                React.createElement('svg', { className: 'w-5 h-5 text-green-500 mr-2', fill: 'currentColor', viewBox: '0 0 20 20' },
+                                                    React.createElement('path', { fillRule: 'evenodd', d: 'M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z', clipRule: 'evenodd' })
+                                                ),
+                                                feature
+                                            )
+                                        )
+                                    ),
+                                    React.createElement('button', {
+                                        className: `w-full py-3 rounded-lg font-semibold transition-all ${
+                                            plan.highlight 
+                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105' 
+                                                : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                                        }`
+                                    }, 'Get Started')
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Final CTA Section
+        const FinalCTASection = () => {
+            return React.createElement('section', {
+                id: 'cta-final',
+                className: 'py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white relative overflow-hidden'
+            },
+                React.createElement('div', { className: 'absolute inset-0 opacity-10' },
+                    React.createElement('div', { className: 'absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-float' }),
+                    React.createElement('div', { className: 'absolute bottom-0 right-0 w-96 h-96 bg-purple-300 rounded-full blur-3xl animate-pulse-slow' })
+                ),
+                
+                React.createElement('div', { className: 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10' },
+                    React.createElement(motion.div, {
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { duration: 0.6 }
+                    },
+                        React.createElement('h2', { className: 'text-4xl sm:text-5xl lg:text-6xl font-black mb-6 leading-tight' },
+                            'Ready to End Group Travel Chaos?'
+                        ),
+                        React.createElement('p', { className: 'text-xl sm:text-2xl mb-10 opacity-90 leading-relaxed' },
+                            'Join thousands of travelers who plan better together. Start your first trip today, completely free.'
+                        ),
+                        React.createElement(motion.button, {
+                            whileHover: { scale: 1.05 },
+                            whileTap: { scale: 0.95 },
+                            className: 'bg-white text-blue-600 px-12 py-5 rounded-xl text-xl font-bold shadow-2xl hover:shadow-white/50 transition-all duration-300 inline-block'
+                        }, 'Sign Up Free & Start Planning'),
+                        React.createElement('p', { className: 'text-sm mt-6 opacity-75' }, 
+                            '✓ No credit card required  ✓ 2-minute setup  ✓ Cancel anytime'
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Footer
+        const Footer = () => {
+            const currentYear = new Date().getFullYear();
+            
+            return React.createElement('footer', {
+                className: 'bg-slate-900 text-slate-400 py-12'
+            },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                    React.createElement('div', { className: 'grid md:grid-cols-4 gap-8 mb-8' },
+                        // Company
+                        React.createElement('div', {},
+                            React.createElement('div', { className: 'flex items-center space-x-2 mb-4' },
+                                React.createElement('svg', { 
+                                    className: 'w-8 h-8', 
+                                    viewBox: '0 0 40 40',
+                                    fill: 'none',
+                                    xmlns: 'http://www.w3.org/2000/svg'
+                                },
+                                    React.createElement('circle', { cx: '20', cy: '20', r: '18', fill: 'url(#gradient2)' }),
+                                    React.createElement('path', { 
+                                        d: 'M20 10L25 18H15L20 10Z M15 22L20 30L25 22H15Z',
+                                        fill: 'white'
+                                    }),
+                                    React.createElement('defs', {},
+                                        React.createElement('linearGradient', { 
+                                            id: 'gradient2', 
+                                            x1: '0', 
+                                            y1: '0', 
+                                            x2: '40', 
+                                            y2: '40'
+                                        },
+                                            React.createElement('stop', { offset: '0%', stopColor: '#2563eb' }),
+                                            React.createElement('stop', { offset: '100%', stopColor: '#7c3aed' })
+                                        )
+                                    )
+                                ),
+                                React.createElement('span', { className: 'text-xl font-bold text-white' }, 'SthiraTech')
+                            ),
+                            React.createElement('p', { className: 'text-sm' }, 
+                                'Making group travel planning effortless, one trip at a time.'
+                            )
+                        ),
+                        
+                        // Product
+                        React.createElement('div', {},
+                            React.createElement('h4', { className: 'text-white font-semibold mb-4' }, 'Product'),
+                            React.createElement('ul', { className: 'space-y-2 text-sm' },
+                                ['Features', 'Pricing', 'Roadmap', 'Updates'].map(item => 
+                                    React.createElement('li', { key: item },
+                                        React.createElement('a', { href: '#', className: 'hover:text-white transition-colors' }, item)
+                                    )
+                                )
+                            )
+                        ),
+                        
+                        // Company
+                        React.createElement('div', {},
+                            React.createElement('h4', { className: 'text-white font-semibold mb-4' }, 'Company'),
+                            React.createElement('ul', { className: 'space-y-2 text-sm' },
+                                ['About', 'Blog', 'Careers', 'Contact'].map(item => 
+                                    React.createElement('li', { key: item },
+                                        React.createElement('a', { href: '#', className: 'hover:text-white transition-colors' }, item)
+                                    )
+                                )
+                            )
+                        ),
+                        
+                        // Legal
+                        React.createElement('div', {},
+                            React.createElement('h4', { className: 'text-white font-semibold mb-4' }, 'Legal'),
+                            React.createElement('ul', { className: 'space-y-2 text-sm' },
+                                ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR'].map(item => 
+                                    React.createElement('li', { key: item },
+                                        React.createElement('a', { href: '#', className: 'hover:text-white transition-colors' }, item)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center' },
+                        React.createElement('p', { className: 'text-sm' }, 
+                            `© ${currentYear} SthiraTech. All rights reserved.`
+                        ),
+                        React.createElement('div', { className: 'flex space-x-6 mt-4 md:mt-0' },
+                            ['Twitter', 'LinkedIn', 'Instagram'].map(social => 
+                                React.createElement('a', { 
+                                    key: social,
+                                    href: '#', 
+                                    className: 'hover:text-white transition-colors text-sm' 
+                                }, social)
+                            )
+                        )
+                    )
+                )
+            );
+        };
+        
+        // Main App Component
+        const App = () => {
+            return React.createElement('div', { className: 'overflow-x-hidden' },
+                React.createElement(Navigation),
+                React.createElement(HeroSection),
+                React.createElement(FeaturesSection),
+                React.createElement(HowItWorksSection),
+                React.createElement(TestimonialsSection),
+                React.createElement(PricingSection),
+                React.createElement(FinalCTASection),
+                React.createElement(Footer)
+            );
+        };
+        
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>

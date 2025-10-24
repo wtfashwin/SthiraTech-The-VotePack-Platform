@@ -1,17 +1,21 @@
-
-import os
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import config 
 
-load_dotenv()
+engine = create_engine(config.settings.DATABASE_URL)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-engine = create_engine(DATABASE_URL)
+@event.listens_for(engine, "connect")
+def connect(dbapi_connection, connection_record):
+    """
+    On the very first connection to a new database, this function will execute
+    the 'CREATE EXTENSION IF NOT EXISTS vector' command. This ensures that
+    the pgvector extension is always enabled, making the app robust.
+    """
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+    finally:
+        cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
 

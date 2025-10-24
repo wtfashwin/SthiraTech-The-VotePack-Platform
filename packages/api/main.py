@@ -1,58 +1,54 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from . import models, schemas
-from .database import SessionLocal, engine, Base
-Base.metadata.create_all(bind=engine)
-import uuid
+"""
+The main entry point for the PackVote API server.
+"""
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
+import database
+import models
+from routers import trips, itinerary, polling, expenses, auth, ai
+
+# Define the global API prefix
+API_V1_PREFIX = "/api/v1"
+
+# Lifespan event handler for startup/shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create database tables
+    models.Base.metadata.create_all(bind=database.engine)
+    print("✅ Database tables created")
+    yield
+    # Shutdown: Cleanup if needed
+    print("👋 Shutting down")
+
+# Initialize FastAPI app
 app = FastAPI(
     title="PackVote API",
-    description="Backend for the AI group travel planner."
+    description="The unified group travel super-app backend.",
+    version="2.0.0",
+    lifespan=lifespan
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:5174"],  # Added both common Vite ports
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Include routers with API prefix
+app.include_router(auth.router, prefix=API_V1_PREFIX)  # Auth router first (no authentication required)
+app.include_router(trips.router, prefix=API_V1_PREFIX)
+app.include_router(itinerary.router, prefix=API_V1_PREFIX)
+app.include_router(polling.router, prefix=API_V1_PREFIX)
+app.include_router(expenses.router, prefix=API_V1_PREFIX)
+app.include_router(ai.router, prefix=API_V1_PREFIX)  # AI router for semantic search
+
+# Root health check endpoint
 @app.get("/", tags=["Health Check"])
 def read_root():
-    """Server status check karne ke liye."""
-    return {"status": "ok", "message": "Welcome to PackVote API"}
-
-@app.post("/trips/", response_model=schemas.Trip, status_code=status.HTTP_201_CREATED, tags=["Trips"])
-def create_trip(trip: schemas.TripCreate, db: Session = Depends(get_db)):
-    """Ek naya trip create karta hai."""
-    trip_id = str(uuid.uuid4())
-    creator_id = "user_placeholder_123"  
-    db_trip = models.Trip(id=trip_id, name=trip.name, creatorId=creator_id)
-    
-    db.add(db_trip)
-    db.commit()
-    db.refresh(db_trip)
-    return db_trip
-
-@app.get("/trips/{trip_id}", response_model=schemas.Trip, tags=["Trips"])
-def get_trip(trip_id: str, db: Session = Depends(get_db)):
-    """ID se ek specific trip ki details laata hai."""
-    db_trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
-    if db_trip is None:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    return db_trip
-
-@app.post("/trips/{trip_id}/participants/", response_model=schemas.Participant, status_code=status.HTTP_201_CREATED, tags=["Participants"])
-def add_participant_to_trip(trip_id: str, participant: schemas.ParticipantCreate, db: Session = Depends(get_db)):
-    """Ek trip mein naye participant ko add karta hai."""
-    db_trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
-    if not db_trip:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    
-    db_participant = models.Participant(**participant.model_dump(), tripId=trip_id)
-    
-    db.add(db_participant)
-    db.commit()
-    db.refresh(db_participant)
-    return db_participant
-
+    """Health check endpoint."""
+    return {"status": "ok", "message": "PackVote API is running", "version": "2.0.0"}
