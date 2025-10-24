@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     # 4. Access Token Expiration (in minutes)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    # 5. OpenAI API Key for AI features
-    OPENAI_API_KEY: Optional[str] = None
+    # 5. Google Gemini API Key for AI features
+    GEMINI_API_KEY: Optional[str] = None
 
 
     # Inner class to configure Pydantic Settings

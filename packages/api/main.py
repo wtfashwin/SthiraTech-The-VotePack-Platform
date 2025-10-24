@@ -1,6 +1,7 @@
-"""
+""" 
 The main entry point for the PackVote API server.
 """
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -31,9 +32,21 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# Allow both local development and production origins
+origins = [
+    "http://localhost:5173",  # Local Vite dev server
+    "http://localhost:5174",  # Alternative Vite port
+    "http://127.0.0.1:5173",  # Alternative localhost
+]
+
+# Add production frontend URL from environment variable
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],  # Added both common Vite ports
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

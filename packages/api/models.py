@@ -133,9 +133,9 @@ class Recommendation(Base):
     # Use Integer for rank for proper sorting and calculations
     rank = Column(Integer, default=0)
     
-    # Vector column for AI similarity search. 384 is a common dimension for small models.
+    # Vector column for AI similarity search using Google Gemini (768 dimensions)
     # To use this, you need to run `CREATE EXTENSION IF NOT EXISTS vector;` in your PostgreSQL DB.
-    embedding: Mapped[Optional[list[float]]] = mapped_column(VECTOR(384), nullable=True)
+    embedding: Mapped[Optional[list[float]]] = mapped_column(VECTOR(768), nullable=True)
 
     # Relationships
     trip = relationship("Trip", back_populates="recommendations")
@@ -218,8 +218,8 @@ class Activity(Base):
     end_time = Column(Time, nullable=True)
     location = Column(String(255), nullable=True)
     
-    # Vector column for AI similarity search
-    embedding: Mapped[Optional[list[float]]] = mapped_column(VECTOR(384), nullable=True)
+    # Vector column for AI similarity search using Google Gemini (768 dimensions)
+    embedding: Mapped[Optional[list[float]]] = mapped_column(VECTOR(768), nullable=True)
     
     # Relationships
     day = relationship("ItineraryDay", back_populates="activities")

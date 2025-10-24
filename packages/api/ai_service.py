@@ -1,23 +1,23 @@
 """ 
-AI services for generating embeddings and recommendations using OpenAI.
+AI services for generating embeddings and recommendations using Google Gemini API.
 """
 from typing import List, Optional, Any
-import openai
+import google.generativeai as genai
 from sqlalchemy.orm import Session
 import config
 import models
 import numpy as np
 
-# Initialize OpenAI client
-if config.settings.OPENAI_API_KEY:
-    openai.api_key = config.settings.OPENAI_API_KEY
+# Initialize Gemini client
+if config.settings.GEMINI_API_KEY:
+    genai.configure(api_key=config.settings.GEMINI_API_KEY)  # type: ignore[attr-defined]
 
-EMBEDDING_MODEL = "text-embedding-3-small"  # 384 dimensions, fast and efficient
-EMBEDDING_DIMENSION = 384
+EMBEDDING_MODEL = "models/embedding-001"  # Gemini embedding model (768 dimensions)
+EMBEDDING_DIMENSION = 768
 
 def generate_embedding(text: str) -> Optional[List[float]]:
     """
-    Generate an embedding vector for the given text using OpenAI's API.
+    Generate an embedding vector for the given text using Google Gemini API.
     
     Args:
         text: The text to generate an embedding for
@@ -25,16 +25,18 @@ def generate_embedding(text: str) -> Optional[List[float]]:
     Returns:
         A list of floats representing the embedding vector, or None if API key is not set
     """
-    if not config.settings.OPENAI_API_KEY:
-        print("⚠️  OpenAI API key not set. Skipping embedding generation.")
+    if not config.settings.GEMINI_API_KEY:
+        print("⚠️  Gemini API key not set. Skipping embedding generation.")
         return None
     
     try:
-        response = openai.embeddings.create(
+        # Use Gemini's embedding model
+        result = genai.embed_content(  # type: ignore[attr-defined]
             model=EMBEDDING_MODEL,
-            input=text
+            content=text,
+            task_type="retrieval_document"
         )
-        return response.data[0].embedding
+        return result['embedding']
     except Exception as e:
         print(f"❌ Error generating embedding: {e}")
         return None
