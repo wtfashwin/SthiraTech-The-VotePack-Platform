@@ -1,4 +1,4 @@
-from pantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         extra="ignore"         
     )
 
-settings = Settings()
+settings = Settings() # type: ignore[call-arg]
 
 print("--- Loaded Settings ---")
 print(f"DATABASE_URL: {settings.DATABASE_URL}")
