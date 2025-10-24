@@ -1,18 +1,11 @@
 import { create } from 'zustand';
 
 interface TripState {
-  // --- Core Trip Selection ---
-  /** The ID of the trip currently active in the UI. Used by TanStack Query hooks. */
   activeTripId: string | null;
 
-  // --- UI/Modal States ---
-  /** Whether the modal for creating a new trip is open. */
   isCreatingNewTripModalOpen: boolean;
-  /** Whether the modal for adding participants is open. */
   isAddParticipantModalOpen: boolean;
-  /** Whether the modal for creating an expense is open. */
   isCreateExpenseModalOpen: boolean;
-  /** Whether the modal for creating a poll is open. */
   isCreatePollModalOpen: boolean;
   
   // --- Actions ---
@@ -27,14 +20,12 @@ interface TripState {
 }
 
 export const useTripStore = create<TripState>((set) => ({
-  // --- Initial State ---
   activeTripId: null,
   isCreatingNewTripModalOpen: false,
   isAddParticipantModalOpen: false,
   isCreateExpenseModalOpen: false,
   isCreatePollModalOpen: false,
 
-  // --- Actions Implementation ---
   setActiveTripId: (tripId) => set({ activeTripId: tripId }),
 
   resetActiveTrip: () => set({ activeTripId: null }),

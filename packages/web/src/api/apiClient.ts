@@ -23,6 +23,11 @@ import type {
   UserLogin,
   UserPublic,
   Token,
+  ConsensusProposalsResponse,
+  ImportFromUrlRequest,
+  ImportFromUrlResponse,
+  CommitmentDepositCreate,
+  CommitmentDepositPublic,
 } from '../types/db';
 
 // Create axios instance with base URL
@@ -147,6 +152,42 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem('access_token');
+  },
+};
+
+// --- AI Consensus Services ---
+export const consensusService = {
+  getProposals: async (tripId: string): Promise<ConsensusProposalsResponse> => {
+    const { data } = await apiClient.get<ConsensusProposalsResponse>(`/${tripId}/consensus-proposals`);
+    return data;
+  },
+};
+
+// --- URL Import Services ---
+export const importService = {
+  importFromUrl: async (tripId: string, request: ImportFromUrlRequest): Promise<ImportFromUrlResponse> => {
+    const { data } = await apiClient.post<ImportFromUrlResponse>(`/itinerary/trips/${tripId}/import-from-url`, request);
+    return data;
+  },
+};
+
+// --- Payment Services ---
+export const paymentService = {
+  createCommitmentPayment: async (tripId: string, deposit: CommitmentDepositCreate): Promise<any> => {
+    const { data } = await apiClient.post<any>(`/payments/trips/${tripId}/commit`, deposit);
+    return data;
+  },
+
+  getTripDeposits: async (tripId: string): Promise<CommitmentDepositPublic[]> => {
+    const { data } = await apiClient.get<CommitmentDepositPublic[]>(`/payments/trips/${tripId}/deposits`);
+    return data;
+  },
+
+  createStripeOnboardingLink: async (participantId: string): Promise<{ url: string; account_id: string }> => {
+    const { data } = await apiClient.post<{ url: string; account_id: string }>(
+      `/payments/participants/${participantId}/stripe-onboarding`
+    );
+    return data;
   },
 };
 

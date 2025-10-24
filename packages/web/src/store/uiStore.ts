@@ -25,7 +25,6 @@ interface UiStore {
   isAddExpenseModalOpen: boolean;
   setAddExpenseModalOpen: (isOpen: boolean) => void;
 
-  // PackVote 3.0 modal states
   isImportUrlModalOpen: boolean;
   setImportUrlModalOpen: (isOpen: boolean) => void;
 

@@ -1,10 +1,6 @@
-"""
-The final, production-ready CRUD (Create, Read, Update, Delete) service layer.
-This module contains all functions that directly interact with the database,
-keeping business logic separate from the API routing layer. It is optimized for
-both performance (with eager loading) and maintainability.
-"""
 import uuid
+import logging
+from typing import Optional, List, cast
 from decimal import Decimal
 from collections import defaultdict
 from sqlalchemy.orm import Session, selectinload
@@ -14,38 +10,35 @@ import models
 import schemas
 import auth
 
+logger = logging.getLogger(__name__)
+
 # --- Trip & Participant CRUD ---
 
 def get_trip_by_id(db: Session, trip_id: uuid.UUID) -> models.Trip | None:
-    """
-    Retrieves a single trip with all its related data eagerly loaded
-    to prevent N+1 query problems. This is the main data retrieval function.
-    """
     return db.query(models.Trip).options(
-        selectinload(models.Trip.participants),
-        selectinload(models.Trip.itinerary_days).selectinload(models.ItineraryDay.activities),
-        selectinload(models.Trip.polls).selectinload(models.Poll.options).selectinload(models.PollOption.votes),
+        selectinload(models.Trip.participants).selectinload(models.Participant.survey_response),
+        selectinload(models.Trip.itinerary_days).selectinload(models.ItineraryDay.activities).selectinload(models.Activity.poll).selectinload(models.Poll.options).selectinload(models.PollOption.votes),
         selectinload(models.Trip.expenses).selectinload(models.Expense.splits),
+        selectinload(models.Trip.polls), # Eager load polls linked directly to the trip
         selectinload(models.Trip.recommendations)
     ).filter(models.Trip.id == trip_id).first()
 
 def create_trip(db: Session, trip: schemas.TripCreate, creator_id: uuid.UUID) -> models.Trip:
-    """Creates a new trip and adds any initial participants provided."""
-    db_trip = models.Trip(name=trip.name, creator_id=creator_id, start_date=trip.start_date, end_date=trip.end_date)
+    """Creates a new trip and adds the creator as the first participant."""
+    db_trip = models.Trip(name=trip.name, creator_id=creator_id)
     
-    # Add participants if they are included in the creation request.
-    for participant_data in trip.participants:
-        # In a real app, you might find an existing user by email first.
-        # Here, we create a new participant record linked to the trip.
-        db_participant = models.Participant(
-            name=participant_data.name,
-            email=participant_data.email,
-            trip=db_trip
-            # user_id would be linked here if finding an existing user
-        )
-        db.add(db_participant)
+    # The first participant in the schema list is assumed to be the creator
+    if not trip.participants:
+        raise ValueError("Creator participant data is missing in TripCreate schema.")
         
+    creator_data = trip.participants[0]
+    creator_participant = models.Participant(
+        name=creator_data.name,
+        email=creator_data.email,
+        trip=db_trip
+    )
     db.add(db_trip)
+    db.add(creator_participant)
     db.commit()
     db.refresh(db_trip)
     return db_trip
@@ -103,12 +96,12 @@ def create_expense_for_trip(db: Session, trip_id: uuid.UUID, expense: schemas.Ex
     db.refresh(db_expense)
     return db_expense
 
-def get_balances_for_trip(db: Session, trip_id: uuid.UUID) -> list[schemas.Balance]:
+def get_balances_for_trip(db: Session, trip_id: uuid.UUID) -> List[schemas.Balance]:
     """
     Calculates balances using a simple, readable, and maintainable ORM-based approach.
     This is far more robust than a complex raw SQL query.
     """
-    trip = get_trip_by_id(db, trip_id) # Reuse our optimized trip getter
+    trip = get_trip_by_id(db, trip_id)
     if not trip or not trip.participants:
         return []
 
@@ -138,12 +131,11 @@ def get_balances_for_trip(db: Session, trip_id: uuid.UUID) -> list[schemas.Balan
 
 def create_poll_for_trip(db: Session, trip_id: uuid.UUID, poll: schemas.PollCreate) -> models.Poll:
     """Creates a poll and its options for a trip."""
-    # FIX: Correctly handle the list of strings for options
     db_poll = models.Poll(trip_id=trip_id, question=poll.question)
     db.add(db_poll)
-    db.flush() # Get the poll ID
+    db.flush()  # Get the poll ID
 
-    # FIX: Iterate through the list of strings directly
+    # Iterate through the list of strings directly
     for option_text in poll.options:
         db_option = models.PollOption(poll_id=db_poll.id, content=option_text)
         db.add(db_option)
@@ -185,7 +177,6 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     if existing_user:
         raise ValueError("User with this email already exists")
     
-    # Hash password (truncation to 72 bytes handled in auth.get_password_hash)
     hashed_password = auth.get_password_hash(user.password)
     db_user = models.User(
         email=user.email,
@@ -197,14 +188,86 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.refresh(db_user)
     return db_user
 
-def authenticate_user(db: Session, email: str, password: str) -> models.User | None:
+def authenticate_user(db: Session, email: str, password: str) -> Optional[models.User]:
     """Authenticate a user by email and password."""
     user = get_user_by_email(db, email)
     if not user:
         return None
     
-    # Password truncation handled in auth.verify_password
-    if not auth.verify_password(password, user.hashed_password):  # type: ignore[arg-type]
+    # Cast to handle SQLAlchemy column type
+    hashed_pw = cast(str, user.hashed_password)
+    if not hashed_pw or not auth.verify_password(password, hashed_pw):
         return None
     return user
 
+
+def create_commitment_deposit(
+    db: Session,
+    trip_id: uuid.UUID,
+    participant_id: uuid.UUID,
+    amount: Decimal,
+    currency: str = "USD"
+) -> models.CommitmentDeposit:
+    """Create a new commitment deposit record."""
+    db_deposit = models.CommitmentDeposit(
+        trip_id=trip_id,
+        participant_id=participant_id,
+        amount=amount,
+        currency=currency,
+        status="pending"
+    )
+    db.add(db_deposit)
+    db.commit()
+    db.refresh(db_deposit)
+    return db_deposit
+
+def update_deposit_status(
+    db: Session,
+    deposit_id: uuid.UUID,
+    status: str,
+    stripe_payment_intent_id: Optional[str] = None
+) -> Optional[models.CommitmentDeposit]:
+    """Update the status of a commitment deposit."""
+    deposit = db.query(models.CommitmentDeposit).filter(
+        models.CommitmentDeposit.id == deposit_id
+    ).first()
+    
+    if not deposit:
+        return None
+    
+    # Use setattr to avoid type checker issues with SQLAlchemy columns
+    setattr(deposit, 'status', status)
+    if stripe_payment_intent_id:
+        setattr(deposit, 'stripe_payment_intent_id', stripe_payment_intent_id)
+    
+    db.commit()
+    db.refresh(deposit)
+    return deposit
+
+def get_deposit_by_payment_intent(
+    db: Session,
+    payment_intent_id: str
+) -> models.CommitmentDeposit | None:
+    """Retrieve a deposit by Stripe payment intent ID."""
+    return db.query(models.CommitmentDeposit).filter(
+        models.CommitmentDeposit.stripe_payment_intent_id == payment_intent_id
+    ).first()
+
+def update_participant_stripe_account(
+    db: Session,
+    participant_id: uuid.UUID,
+    stripe_account_id: str
+) -> Optional[models.Participant]:
+    """Update a participant's Stripe Connect account ID."""
+    participant = db.query(models.Participant).filter(
+        models.Participant.id == participant_id
+    ).first()
+    
+    if not participant:
+        return None
+    
+    # Use setattr to avoid type checker issues with SQLAlchemy columns
+    setattr(participant, 'stripe_account_id', stripe_account_id)
+    db.commit()
+    db.refresh(participant)
+    return participant

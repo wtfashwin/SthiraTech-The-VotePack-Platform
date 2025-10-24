@@ -67,6 +67,10 @@ class Trip(Base):
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
     final_destination = Column(String(255), nullable=True)
+    
+    # Optional commitment deposit for reducing dropouts
+    commitment_amount = Column(Numeric(10, 2), nullable=True)
+    commitment_currency = Column(String(3), default="USD", nullable=True)
 
     # Relationships
     participants = relationship("Participant", back_populates="trip", cascade="all, delete-orphan", lazy="selectin")
@@ -74,6 +78,7 @@ class Trip(Base):
     itinerary_days = relationship("ItineraryDay", back_populates="trip", cascade="all, delete-orphan", order_by="ItineraryDay.date")
     polls = relationship("Poll", back_populates="trip", cascade="all, delete-orphan")
     expenses = relationship("Expense", back_populates="trip", cascade="all, delete-orphan")
+    commitment_deposits = relationship("CommitmentDeposit", back_populates="trip", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Trip(name='{self.name}', status='{self.status.value}')>"
@@ -85,6 +90,9 @@ class Participant(Base):
     email = Column(String(255), nullable=False, index=True)
     trip_id = Column(UUID(as_uuid=True), ForeignKey("trips.id"), nullable=False)
     
+    # Stripe Connect account ID for receiving payouts
+    stripe_account_id = Column(String(255), nullable=True)
+    
     # Ensures a user can't be added to the same trip twice
     __table_args__ = (UniqueConstraint('email', 'trip_id', name='_email_trip_uc'),)
 
@@ -94,6 +102,7 @@ class Participant(Base):
     votes = relationship("Vote", back_populates="participant", cascade="all, delete-orphan")
     expenses_paid = relationship("Expense", back_populates="paid_by", foreign_keys="[Expense.paid_by_id]")
     expense_splits = relationship("ExpenseSplit", back_populates="participant", cascade="all, delete-orphan")
+    commitment_deposits = relationship("CommitmentDeposit", back_populates="participant", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Participant(name='{self.name}', email='{self.email}')>"
@@ -265,3 +274,27 @@ class ExpenseSplit(Base):
     
     def __repr__(self):
         return f"<ExpenseSplit(participant_id='{self.participant_id}', owed={self.owed_amount}, settled={self.is_settled})>"
+
+# --- Commitment & Escrow Models ---
+
+class CommitmentDeposit(Base):
+    """Tracks commitment deposits for trip participants using Stripe."""
+    __tablename__ = "commitment_deposits"
+    
+    trip_id = Column(UUID(as_uuid=True), ForeignKey("trips.id"), nullable=False)
+    participant_id = Column(UUID(as_uuid=True), ForeignKey("participants.id"), nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    currency = Column(String(3), default="USD", nullable=False)
+    
+    # Stripe payment intent ID for tracking the payment
+    stripe_payment_intent_id = Column(String(255), nullable=True, unique=True)
+    
+    # Status: 'pending', 'paid', 'refunded', 'failed'
+    status = Column(String(50), default="pending", nullable=False)
+    
+    # Relationships
+    trip = relationship("Trip", back_populates="commitment_deposits")
+    participant = relationship("Participant", back_populates="commitment_deposits")
+    
+    def __repr__(self):
+        return f"<CommitmentDeposit(participant_id='{self.participant_id}', amount={self.amount}, status='{self.status}')>"

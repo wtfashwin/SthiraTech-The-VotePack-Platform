@@ -3,7 +3,7 @@
  * Each hook wraps an API service function and provides caching, loading, and error states.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { tripService, itineraryService, pollingService, expenseService, authService } from './apiClient';
+import { tripService, itineraryService, pollingService, expenseService, authService, consensusService, importService, paymentService } from './apiClient';
 import type {
   TripCreate,
   ParticipantCreate,
@@ -14,6 +14,8 @@ import type {
   ExpenseCreate,
   UserCreate,
   UserLogin,
+  ImportFromUrlRequest,
+  CommitmentDepositCreate,
 } from '../types/db';
 
 // --- Trip Hooks ---
@@ -152,5 +154,53 @@ export const useLogout = () => {
       // Clear all queries
       queryClient.clear();
     },
+  });
+};
+
+// --- AI Consensus Hooks ---
+export const useConsensusProposals = (tripId: string) => {
+  return useQuery({
+    queryKey: ['consensus', tripId],
+    queryFn: () => consensusService.getProposals(tripId),
+    enabled: !!tripId,
+  });
+};
+
+// --- URL Import Hooks ---
+export const useImportFromUrl = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tripId, request }: { tripId: string; request: ImportFromUrlRequest }) =>
+      importService.importFromUrl(tripId, request),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['trip', variables.tripId] });
+    },
+  });
+};
+
+// --- Payment Hooks ---
+export const useCreateCommitmentPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tripId, deposit }: { tripId: string; deposit: CommitmentDepositCreate }) =>
+      paymentService.createCommitmentPayment(tripId, deposit),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['deposits', variables.tripId] });
+      queryClient.invalidateQueries({ queryKey: ['trip', variables.tripId] });
+    },
+  });
+};
+
+export const useTripDeposits = (tripId: string) => {
+  return useQuery({
+    queryKey: ['deposits', tripId],
+    queryFn: () => paymentService.getTripDeposits(tripId),
+    enabled: !!tripId,
+  });
+};
+
+export const useCreateStripeOnboarding = () => {
+  return useMutation({
+    mutationFn: (participantId: string) => paymentService.createStripeOnboardingLink(participantId),
   });
 };

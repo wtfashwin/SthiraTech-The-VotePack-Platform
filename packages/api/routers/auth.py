@@ -45,7 +45,6 @@ def register_user(
     """
     try:
         db_user = crud.create_user(db=db, user=user)
-        # Use cast to satisfy type checker while accessing SQLAlchemy model attributes
         return schemas.UserPublic(
             id=db_user.id,
             email=cast(str, db_user.email),
@@ -75,7 +74,6 @@ def login_user(
     Raises:
         HTTPException: If credentials are invalid
     """
-    # OAuth2PasswordRequestForm uses 'username' field, but we treat it as email
     user = crud.authenticate_user(db, email=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
@@ -84,11 +82,9 @@ def login_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Create access token
     access_token_expires = timedelta(minutes=config.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    # pyright: ignore[reportCallIssue]
     access_token = create_access_token(
-        data={"sub": str(user.id)},  # Convert UUID to string for JSON serialization
+        data={"sub": str(user.id)},  
         expires_delta=access_token_expires
     )
     

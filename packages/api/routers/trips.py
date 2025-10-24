@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 import crud
 import schemas
 import dependencies
+import ai_consensus
 
 router = APIRouter(
     tags=["Trips & Participants"]
@@ -75,3 +76,28 @@ def add_activity_to_day(
 ):
     """Adds a new activity to a specific day in the itinerary."""
     return crud.add_activity_to_day(db=db, day_id=day_id, activity=activity)
+
+
+@router.get("/{trip_id}/consensus-proposals", response_model=schemas.ConsensusProposalsResponse)
+def get_consensus_proposals(
+    trip_id: uuid.UUID,
+    db: Session = Depends(dependencies.get_db),
+    current_user: schemas.UserPublic = Depends(dependencies.get_current_user)
+):
+    """
+    Generate AI-powered consensus proposals for the trip based on participant preferences.
+    Returns 2-3 scored itinerary proposals.
+    """
+    try:
+        proposals = ai_consensus.generate_consensus_proposals(db, trip_id)
+        return proposals
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate proposals: {str(e)}"
+        )
