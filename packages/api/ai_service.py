@@ -5,8 +5,7 @@ from typing import List, Optional, Any
 import google.generativeai as genai
 from sqlalchemy.orm import Session
 
-import config
-import models
+from . import config, models
 import numpy as np
 
 # Initialize Gemini client

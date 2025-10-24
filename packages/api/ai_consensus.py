@@ -8,9 +8,7 @@ from sqlalchemy.orm import Session
 import uuid
 import logging
 
-import models
-import schemas
-import config
+from . import models, schemas, config
 import google.generativeai as genai
 
 logger = logging.getLogger(__name__)

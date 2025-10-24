@@ -6,9 +6,7 @@ from collections import defaultdict
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 
-import models
-import schemas
-import auth
+from . import models, schemas, auth
 
 logger = logging.getLogger(__name__)
 

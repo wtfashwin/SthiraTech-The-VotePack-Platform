@@ -4,10 +4,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-import crud
-import schemas
-import dependencies
-import ai_consensus
+from .. import crud, schemas, dependencies
+from .. import ai_consensus
 
 router = APIRouter(
     tags=["Trips & Participants"]

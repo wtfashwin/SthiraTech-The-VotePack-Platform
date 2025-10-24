@@ -9,8 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
-import config
-import schemas
+from . import config, schemas
 
 # Initialize Gemini if API key is available
 if config.settings.GEMINI_API_KEY:
