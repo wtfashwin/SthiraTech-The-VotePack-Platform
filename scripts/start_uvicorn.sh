@@ -15,11 +15,17 @@ else
 fi
 
 echo "Setting PYTHONPATH to include the project source directory..."
-export PYTHONPATH="${PYTHONPATH:-}:/opt/render/project/src"
+export PYTHONPATH="${PYTHONPATH:-}:/opt/render/project/src:/opt/render/project/src/packages/api"
 echo "PYTHONPATH set to: $PYTHONPATH"
+
+# Change to the API directory where the modules are located
+cd /opt/render/project/src/packages/api
+
+echo "Current working directory: $(pwd)"
+echo "Directory contents: $(ls -la)"
 
 # Render sets PORT environment variable (default: 10000)
 # Must bind to 0.0.0.0 to receive traffic from Render's load balancer
 PORT=${PORT:-10000}
 echo "Starting Uvicorn server on 0.0.0.0:${PORT}..."
-exec uvicorn packages.api.main:app --host 0.0.0.0 --port "${PORT}"
+exec python -m uvicorn main:app --host 0.0.0.0 --port "${PORT}"

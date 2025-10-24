@@ -4,9 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-import crud
-import schemas
-import dependencies
+from .. import crud, schemas, dependencies
 
 router = APIRouter(
     prefix="/trips/{trip_id}/expenses",

@@ -8,9 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError # Import for catching DB errors
 
-import crud
-import schemas
-import dependencies
+from .. import crud, schemas, dependencies
 
 router = APIRouter(
     tags=["Polling"]

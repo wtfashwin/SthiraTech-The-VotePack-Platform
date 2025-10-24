@@ -6,30 +6,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-import database
-import models
-import config
-from routers import trips, itinerary, polling, expenses, auth, ai, payments
+from . import database, models, config
+from .routers import trips, itinerary, polling, expenses, auth, ai, payments
 
-# Define the global API prefix
 API_V1_PREFIX = "/api/v1"
 
-# Lifespan event handler for startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create database tables
     models.Base.metadata.create_all(bind=database.engine)
     print("✅ Database tables created")
-    
-    # Initialize Sentry if configured (placeholder for monitoring)
     if config.settings.SENTRY_DSN:
-        # TODO: Initialize Sentry SDK here
-        # import sentry_sdk
-        # sentry_sdk.init(dsn=config.settings.SENTRY_DSN)
-        print("✅ Sentry monitoring enabled")
-    
+        print("✅ Sentry monitoring enabled")    
     yield
-    # Shutdown: Cleanup if needed
     print("👋 Shutting down")
 
 # Initialize FastAPI app

@@ -3,10 +3,8 @@ from typing import cast, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-import database
-import schemas
-import auth
-import models
+
+from . import database, schemas, auth, models
 
 # OAuth2 scheme for token extraction from Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")

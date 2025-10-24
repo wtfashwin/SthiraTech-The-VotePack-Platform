@@ -4,12 +4,12 @@ Extracts activity suggestions from social media URLs (TikTok, Instagram, YouTube
 """
 from typing import List, Optional, Dict, Any
 import re
+import json
 import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
-import config
-import schemas
+from . import config, schemas
 
 # Initialize Gemini if API key is available
 if config.settings.GEMINI_API_KEY:
@@ -147,7 +147,6 @@ def extract_activities_with_ai(
             response_text = re.sub(r'\s*```$', '', response_text)
         
         # Parse JSON
-        import json
         activities_data = json.loads(response_text)
         
         if not isinstance(activities_data, list):
