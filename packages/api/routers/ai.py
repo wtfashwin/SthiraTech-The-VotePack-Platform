@@ -4,10 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import uuid
 
-import schemas
-import dependencies
-import ai_service
-import models
+from .. import schemas, dependencies, ai_service, models
 
 router = APIRouter(prefix="/ai", tags=["AI & Recommendations"])
 
