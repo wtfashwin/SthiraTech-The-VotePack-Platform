@@ -12,6 +12,9 @@ import { useTrip, useAddParticipant, useCreateItineraryDay, useAddActivityToDay,
 import { useUiStore } from '../store/uiStore';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { ConsensusProposalsCard } from '../components/ConsensusProposalsCard';
+import { CommitmentSection } from '../components/CommitmentSection';
+import { ImportFromUrlModal } from '../components/ImportFromUrlModal';
 import type { ParticipantCreate, ItineraryDayCreate, ActivityCreate, PollCreate, VoteCreate, ExpenseCreate, ExpenseSplitBase } from '../types/db';
 
 // --- Form Schemas ---
@@ -69,6 +72,10 @@ export const TripDashboardPage = () => {
     setCreatePollModalOpen,
     isAddExpenseModalOpen,
     setAddExpenseModalOpen,
+    isImportUrlModalOpen,
+    setImportUrlModalOpen,
+    isCommitmentModalOpen,
+    setCommitmentModalOpen,
     selectedDayId,
     setSelectedDayId,
   } = useUiStore();
@@ -236,6 +243,21 @@ export const TripDashboardPage = () => {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* AI Consensus Proposals - New Feature */}
+        <div className="lg:col-span-2">
+          <ConsensusProposalsCard tripId={tripId!} />
+        </div>
+
+        {/* Commitment Deposits - New Feature */}
+        {trip.commitment_amount && trip.commitment_amount > 0 && (
+          <div className="lg:col-span-2">
+            <CommitmentSection 
+              trip={trip} 
+              onCommitClick={() => setCommitmentModalOpen(true)} 
+            />
+          </div>
+        )}
+
         {/* Participants Section */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -278,13 +300,22 @@ export const TripDashboardPage = () => {
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">Itinerary</h2>
-            <Button
-              onClick={() => setAddDayModalOpen(true)}
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              + Add Day
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setImportUrlModalOpen(true)}
+                size="sm"
+                className="bg-pink-600 hover:bg-pink-700 text-white"
+              >
+                🌐 Import
+              </Button>
+              <Button
+                onClick={() => setAddDayModalOpen(true)}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                + Add Day
+              </Button>
+            </div>
           </div>
           <AnimatePresence>
             {trip.itinerary_days.map((day) => (
@@ -553,6 +584,44 @@ export const TripDashboardPage = () => {
               Add Expense
             </Button>
           </form>
+        </Modal>
+      )}
+
+      {/* Import from URL Modal - New Feature */}
+      {isImportUrlModalOpen && (
+        <ImportFromUrlModal 
+          tripId={tripId!} 
+          onClose={() => setImportUrlModalOpen(false)} 
+        />
+      )}
+
+      {/* Commitment Payment Modal - Placeholder for Stripe Integration */}
+      {isCommitmentModalOpen && (
+        <Modal onClose={() => setCommitmentModalOpen(false)} title="Pay Commitment Deposit">
+          <div className="space-y-4">
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+              <p className="text-sm text-yellow-800">
+                <strong>Stripe Integration:</strong> In a production environment, this would integrate with Stripe's 
+                Payment Element to securely collect payment information. For the demo, Stripe test mode should be configured.
+              </p>
+            </div>
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">💳</div>
+              <p className="text-gray-600 mb-4">
+                Deposit Amount: <strong>${trip.commitment_amount?.toFixed(2) || '0.00'} {trip.commitment_currency}</strong>
+              </p>
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => {
+                  // In production: Initialize Stripe Payment Intent and show Payment Element
+                  toast.success('Payment flow would start here (Stripe test mode)');
+                  setCommitmentModalOpen(false);
+                }}
+              >
+                Proceed to Payment
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

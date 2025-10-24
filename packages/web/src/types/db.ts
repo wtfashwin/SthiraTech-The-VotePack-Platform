@@ -64,11 +64,66 @@ export interface TripPublic extends TripBase {
   creator_id: string;
   status: TripStatus;
   final_destination: string | null;
+  commitment_amount: number | null;
+  commitment_currency: string | null;
   participants: ParticipantPublic[];
   recommendations: RecommendationPublic[];
   itinerary_days: ItineraryDayPublic[];
   polls: PollPublic[];
   expenses: ExpensePublic[];
+}
+
+// --- Commitment Deposit Types ---
+export interface CommitmentDepositPublic {
+  id: string;
+  trip_id: string;
+  participant_id: string;
+  amount: number;
+  currency: string;
+  stripe_payment_intent_id: string | null;
+  status: string; // 'pending', 'paid', 'refunded', 'failed'
+}
+
+export interface CommitmentDepositCreate {
+  participant_id: string;
+  amount: number;
+  currency: string;
+}
+
+// --- AI Consensus Types ---
+export interface ConsensusProposal {
+  title: string;
+  description: string;
+  score: number;
+  justification: string;
+  estimated_budget: number | null;
+  pace: string;
+  activities: string[];
+}
+
+export interface ConsensusProposalsResponse {
+  proposals: ConsensusProposal[];
+  group_size: number;
+  average_budget: number | null;
+}
+
+// --- URL Import Types ---
+export interface ImportFromUrlRequest {
+  url: string;
+}
+
+export interface ImportedActivitySuggestion {
+  title: string;
+  notes: string | null;
+  location: string | null;
+  estimated_duration: string | null;
+  confidence: number;
+}
+
+export interface ImportFromUrlResponse {
+  url: string;
+  suggested_activities: ImportedActivitySuggestion[];
+  source_platform: string | null;
 }
 
 // --- Recommendation Types ---

@@ -25,6 +25,13 @@ interface UiStore {
   isAddExpenseModalOpen: boolean;
   setAddExpenseModalOpen: (isOpen: boolean) => void;
 
+  // PackVote 3.0 modal states
+  isImportUrlModalOpen: boolean;
+  setImportUrlModalOpen: (isOpen: boolean) => void;
+
+  isCommitmentModalOpen: boolean;
+  setCommitmentModalOpen: (isOpen: boolean) => void;
+
   // Selected day ID (for adding activities)
   selectedDayId: string | null;
   setSelectedDayId: (dayId: string | null) => void;
@@ -49,6 +56,12 @@ export const useUiStore = create<UiStore>((set) => ({
 
   isAddExpenseModalOpen: false,
   setAddExpenseModalOpen: (isOpen) => set({ isAddExpenseModalOpen: isOpen }),
+
+  isImportUrlModalOpen: false,
+  setImportUrlModalOpen: (isOpen) => set({ isImportUrlModalOpen: isOpen }),
+
+  isCommitmentModalOpen: false,
+  setCommitmentModalOpen: (isOpen) => set({ isCommitmentModalOpen: isOpen }),
 
   selectedDayId: null,
   setSelectedDayId: (dayId) => set({ selectedDayId: dayId }),
