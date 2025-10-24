@@ -18,4 +18,4 @@ fi
 
 
 echo "Starting Uvicorn server..."
-exec uvicorn api.main:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 2
+exec uvicorn api.main:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 2 --app-dir ./packages
