@@ -54,7 +54,11 @@ I went with modern, reliable tools that just work:
 
 ```bash
 # Clone the repo
+<<<<<<< HEAD
 git clone https://github.com/wtfashwin/thiraTech-The-VotePack-Platform.git
+=======
+git clone <your-repo-url>
+>>>>>>> 2a2459c24f9c2e8fd51ec645fc397e6525bf6601
 cd VotePack
 ```
 
