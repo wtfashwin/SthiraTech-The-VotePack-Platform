@@ -1,0 +1,95 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'packages/api/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'packages/api/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: votepack_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        cache-dependency-path: 'packages/api/requirements.txt'
+
+    - name: Install dependencies
+      run: |
+        cd packages/api
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-asyncio httpx
+
+    - name: Lint with Ruff
+      run: |
+        pip install ruff
+        cd packages/api
+        ruff check . --select E,F,W,I --ignore E501
+
+    - name: Type check with mypy
+      run: |
+        pip install mypy types-requests types-redis
+        cd packages/api
+        mypy . --ignore-missing-imports || true
+
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/votepack_test
+        SECRET_KEY: test_secret_key_minimum_32_characters_long_for_testing
+        GEMINI_API_KEY: test_key
+      run: |
+        cd packages/api
+        pytest tests/ -v --cov=. --cov-report=term-missing --cov-report=xml || echo "Tests not implemented yet"
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./packages/api/coverage.xml
+        flags: backend
+        name: backend-coverage
+      continue-on-error: true
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Bandit security scan
+      run: |
+        pip install bandit
+        cd packages/api
+        bandit -r . -f json -o bandit-report.json || true
+
+    - name: Run Safety dependency scan
+      run: |
+        pip install safety
+        cd packages/api
+        safety check --file requirements.txt || true

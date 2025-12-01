@@ -154,6 +154,8 @@ def create_commitment_payment(
         # Convert amount to cents (Stripe expects smallest currency unit)
         amount_cents = int(deposit_data.amount * 100)
         
+        idempotency_key = f"deposit_{deposit.id}"
+
         payment_intent = stripe.PaymentIntent.create(  # type: ignore[attr-defined]
             amount=amount_cents,
             currency=deposit_data.currency.lower(),
@@ -162,7 +164,8 @@ def create_commitment_payment(
                 "participant_id": str(deposit_data.participant_id),
                 "deposit_id": str(deposit.id)
             },
-            description=f"Commitment deposit for {trip.name}"
+            description=f"Commitment deposit for {trip.name}",
+            idempotency_key=idempotency_key
         )
         
         # Update deposit with payment intent ID

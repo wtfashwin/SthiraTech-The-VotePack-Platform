@@ -4,18 +4,22 @@ Authentication router for user registration, login, and token management.
 """
 from datetime import timedelta
 from typing import cast, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from .. import schemas, crud, config, dependencies
-# Import auth functions explicitly to avoid module confusion
 from ..auth import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/register", response_model=schemas.UserPublic, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/hour")
 def register_user(
+    request: Request,
     user: schemas.UserCreate,
     db: Session = Depends(dependencies.get_db)
 ):
@@ -46,7 +50,9 @@ def register_user(
         )
 
 @router.post("/login", response_model=schemas.Token)
+@limiter.limit("10/minute")
 def login_user(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(dependencies.get_db)
 ):

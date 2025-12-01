@@ -29,3 +29,9 @@ google-generativeai==0.8.3
 stripe==11.3.0
 beautifulsoup4==4.12.3
 requests==2.32.3
+bcrypt==4.2.1
+slowapi==0.1.9
+bleach==6.2.0
+alembic==1.14.0
+redis==5.2.1
+sentry-sdk[fastapi]==2.19.2

@@ -1,22 +1,40 @@
-""" 
+"""
 The main entry point for the PackVote API server.
 """
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+import sentry_sdk
 
-from . import database, models, config
+from . import database, models, config, cache
 from .routers import trips, itinerary, polling, expenses, auth, ai, payments
 
+if config.settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=config.settings.SENTRY_DSN,
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+        environment="production" if "render.com" in config.settings.FRONTEND_URL else "development",
+    )
+
 API_V1_PREFIX = "/api/v1"
+
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     models.Base.metadata.create_all(bind=database.engine)
     print("✅ Database tables created")
+
+    cache.init_redis()
+
     if config.settings.SENTRY_DSN:
-        print("✅ Sentry monitoring enabled")    
+        print("✅ Sentry monitoring enabled")
     yield
     print("👋 Shutting down")
 
@@ -27,6 +45,9 @@ app = FastAPI(
     version="3.0.0",
     lifespan=lifespan
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware
 # Allow both local development and production origins
@@ -45,9 +66,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Include routers with API prefix
 app.include_router(auth.router, prefix=API_V1_PREFIX)  # Auth router first (no authentication required)

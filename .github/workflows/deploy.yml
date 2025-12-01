@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Render
+      run: |
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Vercel
+      run: |
+        echo "Vercel auto-deploys on push to main"
+        # Vercel GitHub integration handles this automatically
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: always()
+
+    steps:
+    - name: Deployment status
+      run: |
+        echo "Deployment completed for VotePack"
+        echo "Backend: Render"
+        echo "Frontend: Vercel"

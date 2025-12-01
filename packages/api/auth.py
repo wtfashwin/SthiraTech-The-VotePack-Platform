@@ -4,19 +4,19 @@ Authentication utilities for JWT token generation and password hashing.
 from datetime import datetime, timedelta
 from typing import Optional
 import uuid
-import hashlib
+import bcrypt
 from jose import JWTError, jwt
 
 from . import config, schemas
 
-# Simple password hashing using SHA-256 (no bcrypt complications)
 def get_password_hash(password: str) -> str:
-    """Hash a password using SHA-256."""
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    """Hash a password using bcrypt with salt."""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against a hashed password."""
-    return get_password_hash(plain_password) == hashed_password
+    """Verify a plain password against a bcrypt hashed password."""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
