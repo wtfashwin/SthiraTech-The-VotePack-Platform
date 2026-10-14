@@ -4,11 +4,11 @@
 API Router for managing Polls and Votes within a trip.
 """
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError # Import for catching DB errors
 
-from .. import crud, schemas, dependencies
+from .. import crud, dependencies, schemas
 
 router = APIRouter(
     tags=["Polling"]

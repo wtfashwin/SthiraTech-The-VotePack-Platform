@@ -3,14 +3,15 @@
 Authentication router for user registration, login, and token management.
 """
 from datetime import timedelta
-from typing import cast, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from typing import Optional, cast
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy.orm import Session
 
-from .. import schemas, crud, config, dependencies
+from .. import config, crud, dependencies, schemas
 from ..auth import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -25,14 +26,14 @@ def register_user(
 ):
     """
     Register a new user account.
-    
+
     Args:
         user: User registration data (email, password, name)
         db: Database session
-        
+
     Returns:
         UserPublic: Created user information (without password)
-        
+
     Raises:
         HTTPException: If email already exists
     """
@@ -58,14 +59,14 @@ def login_user(
 ):
     """
     Login with email and password to receive a JWT access token.
-    
+
     Args:
         form_data: OAuth2 form with username (email) and password
         db: Database session
-        
+
     Returns:
         Token: JWT access token and token type
-        
+
     Raises:
         HTTPException: If credentials are invalid
     """
@@ -76,14 +77,14 @@ def login_user(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     access_token_expires = timedelta(minutes=config.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.id)},  
+        data={"sub": str(user.id)},
         expires_delta=access_token_expires
     )
-    
-    return schemas.Token(access_token=access_token, token_type="bearer")
+
+    return schemas.Token(access_token=access_token)
 
 @router.get("/me", response_model=schemas.UserPublic)
 def get_current_user_info(
@@ -91,10 +92,10 @@ def get_current_user_info(
 ):
     """
     Get information about the currently authenticated user.
-    
+
     Args:
         current_user: Current authenticated user from JWT token
-        
+
     Returns:
         UserPublic: Current user information
     """

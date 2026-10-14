@@ -1,8 +1,9 @@
 """
 Email notification service using Brevo (Sendinblue) - Free tier: 300 emails/day.
 """
+
 import requests
-from typing import Optional, List
+
 from . import config
 
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"

@@ -2,10 +2,12 @@
 Redis caching layer using Upstash (free tier).
 Provides caching for trips, users, and expensive computations.
 """
-import json
 import functools
-from typing import Optional, Any, Callable
+import json
+from typing import Any, Callable, Optional
+
 from redis import Redis
+
 from . import config
 
 # Initialize Redis client (Upstash)

@@ -2,14 +2,15 @@
 AI Consensus Engine for PackVote 3.0
 Generates and scores itinerary proposals based on group preferences.
 """
-from typing import List, Optional, Dict, Any, cast
-from decimal import Decimal
-from sqlalchemy.orm import Session
-import uuid
 import logging
+import uuid
+from decimal import Decimal
+from typing import Any, Dict, List, Optional, cast
 
-from . import models, schemas, config
 import google.generativeai as genai
+from sqlalchemy.orm import Session
+
+from . import config, models, schemas
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,11 @@ def calculate_compatibility_score(
     survey_responses: List[models.SurveyResponse]
 ) -> float:
     if not survey_responses:
-        return 50.0  
-    
+        return 50.0
+
     total_score = 0.0
-    weight_count = 0
-    
+    weight_count = 0.0
+
     # Budget compatibility (40% weight)
     proposal_budget = proposal.get('estimated_budget', 0)
     if proposal_budget > 0:
@@ -43,11 +44,11 @@ def calculate_compatibility_score(
                 max_budget = max(float(response_budget), proposal_budget)
                 budget_match = 1 - (budget_diff / max_budget) if max_budget > 0 else 1
                 budget_scores.append(budget_match * 100)
-        
+
         if budget_scores:
             total_score += sum(budget_scores) / len(budget_scores) * 0.4
             weight_count += 0.4
-    
+
     # Vibe/Interest compatibility (40% weight)
     proposal_vibe = proposal.get('vibe', '').lower()
     if proposal_vibe:
@@ -60,16 +61,16 @@ def calculate_compatibility_score(
                 common_keywords = set(proposal_vibe.split()) & set(response_vibe_lower.split())
                 vibe_match = len(common_keywords) / max(len(proposal_vibe.split()), 1)
                 vibe_scores.append(vibe_match * 100)
-        
+
         if vibe_scores:
             total_score += sum(vibe_scores) / len(vibe_scores) * 0.4
             weight_count += 0.4
-    
+
     # Pace compatibility (20% weight)
     proposal_pace = proposal.get('pace', 'moderate').lower()
     pace_mapping = {'relaxed': 1, 'moderate': 2, 'packed': 3}
     proposal_pace_value = pace_mapping.get(proposal_pace, 2)
-    
+
     # Infer pace preference from vibe keywords
     pace_scores = []
     for response in survey_responses:
@@ -82,15 +83,15 @@ def calculate_compatibility_score(
                 preferred_pace = 3
             else:
                 preferred_pace = 2
-            
+
             pace_diff = abs(preferred_pace - proposal_pace_value)
             pace_match = 1 - (pace_diff / 2)  # Max diff is 2
             pace_scores.append(pace_match * 100)
-    
+
     if pace_scores:
         total_score += sum(pace_scores) / len(pace_scores) * 0.2
         weight_count += 0.2
-    
+
     # Normalize score
     final_score = total_score / weight_count if weight_count > 0 else 50.0
     return min(max(final_score, 0.0), 100.0)
@@ -102,24 +103,24 @@ def generate_proposal_variations(
 ) -> List[Dict[str, Any]]:
     """
     Generate 2-3 distinct itinerary proposal variations based on destination and preferences.
-    
+
     Args:
         trip: The Trip model instance
         survey_responses: List of participant survey responses
-        
+
     Returns:
         List of proposal dictionaries
     """
     proposals = []
-    
+
     # Calculate average budget from responses
     budgets = [
-        float(cast(Decimal, r.budget)) 
-        for r in survey_responses 
+        float(cast(Decimal, r.budget))
+        for r in survey_responses
         if cast(Optional[Decimal], r.budget) is not None and cast(Decimal, r.budget) > 0
     ]
     avg_budget = sum(budgets) / len(budgets) if budgets else 1000.0
-    
+
     # Collect all vibes/interests
     all_vibes = []
     for response in survey_responses:
@@ -127,9 +128,9 @@ def generate_proposal_variations(
         if response_vibe:
             all_vibes.append(str(response_vibe))
     combined_vibes = " ".join(all_vibes)
-    
+
     destination = trip.final_destination or "an exciting location"
-    
+
     # Proposal 1: Budget-focused, relaxed pace
     proposals.append({
         'title': f'Budget-Friendly {destination} Adventure',
@@ -144,7 +145,7 @@ def generate_proposal_variations(
             'Budget-friendly accommodations'
         ]
     })
-    
+
     # Proposal 2: Balanced/Moderate
     proposals.append({
         'title': f'Balanced {destination} Experience',
@@ -159,7 +160,7 @@ def generate_proposal_variations(
             'Comfortable mid-range accommodations'
         ]
     })
-    
+
     # Proposal 3: Premium/Activity-packed (only if budget allows)
     if avg_budget >= 1500:
         proposals.append({
@@ -175,7 +176,7 @@ def generate_proposal_variations(
                 'Premium accommodations with amenities'
             ]
         })
-    
+
     return proposals
 
 
@@ -185,11 +186,11 @@ def generate_consensus_proposals(
 ) -> schemas.ConsensusProposalsResponse:
     """
     Main function to generate and score consensus proposals for a trip.
-    
+
     Args:
         db: Database session
         trip_id: UUID of the trip
-        
+
     Returns:
         ConsensusProposalsResponse with scored proposals
     """
@@ -197,21 +198,21 @@ def generate_consensus_proposals(
     trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
     if not trip:
         raise ValueError("Trip not found")
-    
+
     # Fetch survey responses for all participants
     survey_responses = []
     for participant in trip.participants:
         if participant.survey_response:
             survey_responses.append(participant.survey_response)
-    
+
     # Generate proposal variations
     proposal_dicts = generate_proposal_variations(trip, survey_responses)
-    
+
     # Calculate scores for each proposal
     scored_proposals = []
     for proposal_dict in proposal_dicts:
         score = calculate_compatibility_score(proposal_dict, survey_responses)
-        
+
         scored_proposals.append(schemas.ConsensusProposal(
             title=proposal_dict['title'],
             description=proposal_dict['description'],
@@ -221,18 +222,18 @@ def generate_consensus_proposals(
             pace=proposal_dict['pace'],
             activities=proposal_dict['activities']
         ))
-    
+
     # Sort by score (highest first)
     scored_proposals.sort(key=lambda p: p.score, reverse=True)
-    
+
     # Calculate average budget from responses
     budgets = [
-        float(cast(Decimal, r.budget)) 
-        for r in survey_responses 
+        float(cast(Decimal, r.budget))
+        for r in survey_responses
         if cast(Optional[Decimal], r.budget) is not None and cast(Decimal, r.budget) > 0
     ]
     avg_budget = Decimal(str(sum(budgets) / len(budgets))).quantize(Decimal('0.01')) if budgets else None
-    
+
     return schemas.ConsensusProposalsResponse(
         proposals=scored_proposals[:3],  # Return top 3
         group_size=len(trip.participants),
@@ -247,35 +248,35 @@ def enhance_with_ai_suggestions(
     """
     Optional: Use Gemini AI to enhance proposal with specific activity suggestions.
     This is a V2 feature placeholder for future enhancement.
-    
+
     Args:
         proposal: Base proposal dictionary
         destination: Destination name
-        
+
     Returns:
         Enhanced proposal with AI-generated activities
     """
     if not config.settings.GEMINI_API_KEY:
         return proposal
-    
+
     try:
         # Use Gemini to generate specific activity suggestions
         model = genai.GenerativeModel('gemini-pro')  # type: ignore[attr-defined]
         budget_str = f"{proposal['estimated_budget']:.0f}"
         prompt = f"""
-        Generate 4-5 specific activity suggestions for a {proposal['pace']} paced trip to {destination} 
+        Generate 4-5 specific activity suggestions for a {proposal['pace']} paced trip to {destination}
         with a budget around {budget_str} USD per person.
         Focus on: {proposal['vibe']}
-        
+
         Return only a simple list of activities, one per line.
         """
-        
+
         response = model.generate_content(prompt)  # type: ignore[attr-defined]
         if response and response.text:
             activities = [line.strip('- ').strip() for line in response.text.split('\n') if line.strip()]
             proposal['activities'] = activities[:5]
-    
+
     except Exception as e:
         logger.error(f"⚠️ AI enhancement failed: {e}")
-    
+
     return proposal

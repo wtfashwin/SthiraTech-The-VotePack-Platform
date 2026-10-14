@@ -1,10 +1,11 @@
 # api/routers/expenses.py
 import uuid
 from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from .. import crud, schemas, dependencies
+from .. import crud, dependencies, schemas
 
 router = APIRouter(
     prefix="/trips/{trip_id}/expenses",
@@ -27,12 +28,12 @@ def add_expense_to_trip(
     db_trip = crud.get_trip_by_id(db, trip_id=trip_id)
     if not db_trip:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
-        
+
     # Advanced Validation: Ensure all participants in the expense exist in the trip
     participant_ids_in_trip = {p.id for p in db_trip.participants}
     all_expense_participant_ids = {split.participant_id for split in expense.splits}
     all_expense_participant_ids.add(expense.paid_by_id)
-    
+
     if not all_expense_participant_ids.issubset(participant_ids_in_trip):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

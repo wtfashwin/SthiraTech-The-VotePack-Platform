@@ -1,13 +1,16 @@
 """
 Authentication utilities for JWT token generation and password hashing.
 """
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional
-import uuid
+
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 
 from . import config, schemas
+
 
 def get_password_hash(password: str) -> str:
     """Hash a password using bcrypt with salt."""
@@ -21,11 +24,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
     Create a JWT access token.
-    
+
     Args:
         data: Data to encode in the token (typically {"sub": user_id})
         expires_delta: Optional custom expiration time
-        
+
     Returns:
         Encoded JWT token string
     """
@@ -34,7 +37,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=config.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
+
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, config.settings.SECRET_KEY, algorithm=config.settings.ALGORITHM)
     return encoded_jwt
@@ -42,10 +45,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_access_token(token: str) -> Optional[schemas.TokenData]:
     """
     Decode and validate a JWT access token.
-    
+
     Args:
         token: JWT token string
-        
+
     Returns:
         TokenData object if valid, None otherwise
     """
@@ -57,7 +60,7 @@ def decode_access_token(token: str) -> Optional[schemas.TokenData]:
         # Convert string UUID back to UUID object
         user_id = uuid.UUID(user_id_str)
         return schemas.TokenData(user_id=user_id)
-    except JWTError:
+    except InvalidTokenError:
         return None
     except ValueError:  # Invalid UUID format
         return None

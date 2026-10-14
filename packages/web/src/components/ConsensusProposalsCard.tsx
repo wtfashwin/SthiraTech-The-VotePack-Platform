@@ -18,9 +18,9 @@ export const ConsensusProposalsCard = ({ tripId }: ConsensusProposalsCardProps) 
     return (
       <div className="bg-white rounded-3xl shadow-lg p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-6 bg-gray-200 rounded-sm w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded-sm w-full mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded-sm w-5/6"></div>
         </div>
       </div>
     );
@@ -69,11 +69,11 @@ export const ConsensusProposalsCard = ({ tripId }: ConsensusProposalsCardProps) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-3xl shadow-lg p-6"
+      className="bg-linear-to-br from-purple-50 to-indigo-50 rounded-3xl shadow-lg p-6"
     >
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-indigo-600">
             🤖 AI Consensus Proposals
           </h3>
           <p className="text-sm text-gray-600 mt-1">

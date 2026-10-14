@@ -1,8 +1,8 @@
 """
 Tests for authentication endpoints.
 """
-import pytest
 from fastapi import status
+
 
 def test_register_user(client):
     """Test user registration."""

@@ -4,13 +4,15 @@
  */
 
 // --- Enums ---
-export enum TripStatus {
-  PLANNING = "PLANNING",
-  CONFIRMED = "CONFIRMED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  ARCHIVED = "ARCHIVED"
-}
+export const TripStatus = {
+  PLANNING: "PLANNING",
+  CONFIRMED: "CONFIRMED",
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
+  ARCHIVED: "ARCHIVED",
+} as const;
+
+export type TripStatus = (typeof TripStatus)[keyof typeof TripStatus];
 
 // --- User Types ---
 export interface UserPublic {
@@ -41,7 +43,7 @@ export interface ParticipantBase {
   email: string;
 }
 
-export interface ParticipantCreate extends ParticipantBase {}
+export type ParticipantCreate = ParticipantBase;
 
 export interface ParticipantPublic extends ParticipantBase {
   id: string;
@@ -87,6 +89,13 @@ export interface CommitmentDepositPublic {
 export interface CommitmentDepositCreate {
   participant_id: string;
   amount: number;
+  currency: string;
+}
+
+export interface CommitmentPaymentResponse {
+  client_secret: string;
+  deposit_id: string;
+  amount: number | string;
   currency: string;
 }
 
@@ -139,7 +148,7 @@ export interface ItineraryDayBase {
   title: string | null;
 }
 
-export interface ItineraryDayCreate extends ItineraryDayBase {}
+export type ItineraryDayCreate = ItineraryDayBase;
 
 export interface ItineraryDayPublic extends ItineraryDayBase {
   id: string;
@@ -155,7 +164,7 @@ export interface ActivityBase {
   location: string | null;
 }
 
-export interface ActivityCreate extends ActivityBase {}
+export type ActivityCreate = ActivityBase;
 
 export interface ActivityPublic extends ActivityBase {
   id: string;

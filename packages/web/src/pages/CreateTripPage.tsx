@@ -59,7 +59,7 @@ export const CreateTripPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export const CreateTripPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-2 text-center"
+          className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-blue-500 mb-2 text-center"
         >
           PackVote 2.0
         </motion.h1>
@@ -142,7 +142,7 @@ export const CreateTripPage = () => {
             <Button
               type="submit"
               isLoading={createTripMutation.isPending}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white shadow-lg"
+              className="w-full bg-linear-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white shadow-lg"
             >
               {createTripMutation.isPending ? 'Creating...' : 'Create Trip'}
             </Button>

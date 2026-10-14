@@ -4,7 +4,6 @@
  */
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { useTripDeposits } from '../api/hooks';
 import { Button } from './ui/button';
 import type { TripPublic } from '../types/db';
@@ -46,11 +45,11 @@ export const CommitmentSection = ({ trip, onCommitClick }: CommitmentSectionProp
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl shadow-lg p-6"
+      className="bg-linear-to-br from-green-50 to-emerald-50 rounded-3xl shadow-lg p-6"
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600">
             💰 Commitment Deposits
           </h3>
           <p className="text-sm text-gray-600 mt-1">
@@ -77,7 +76,7 @@ export const CommitmentSection = ({ trip, onCommitClick }: CommitmentSectionProp
             initial={{ width: 0 }}
             animate={{ width: `${paymentRate}%` }}
             transition={{ duration: 0.5 }}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full"
+            className="bg-linear-to-r from-green-500 to-emerald-500 h-full rounded-full"
           />
         </div>
         <p className="text-xs text-gray-500 mt-1">{paymentRate.toFixed(0)}% commitment rate</p>
@@ -146,7 +145,7 @@ export const CommitmentSection = ({ trip, onCommitClick }: CommitmentSectionProp
       )}
 
       {/* Info Banner */}
-      <div className="mt-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+      <div className="mt-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-sm">
         <p className="text-xs text-blue-800">
           <strong>Why deposits?</strong> Commitment deposits help ensure everyone is serious about the trip, 
           reducing last-minute dropouts and making planning more reliable for the group.

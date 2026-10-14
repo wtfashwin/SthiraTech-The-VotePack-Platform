@@ -60,7 +60,7 @@ const Navigation = () => {
                 </linearGradient>
               </defs>
             </svg>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               SthiraTech
             </span>
           </div>
@@ -82,7 +82,7 @@ const Navigation = () => {
             ))}
             <button
               onClick={() => navigate('/register')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
               Sign Up
             </button>
@@ -103,7 +103,7 @@ const HeroSection = () => {
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-100 opacity-50 animate-gradient-shift" />
+      <div className="absolute inset-0 bg-linear-to-br from-blue-100 via-purple-100 to-blue-100 opacity-50 animate-gradient-shift" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -115,7 +115,7 @@ const HeroSection = () => {
           >
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-tight mb-6">
               Group Trips,{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Finally Organized.
               </span>
             </h1>
@@ -128,7 +128,7 @@ const HeroSection = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/register')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-bold shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
+              className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-bold shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
             >
               Get Started for Free
             </motion.button>
@@ -144,31 +144,31 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="hidden lg:block"
           >
-            <div className="bg-gradient-to-br from-slate-50 to-slate-200 rounded-3xl p-6 shadow-2xl relative">
+            <div className="bg-linear-to-br from-slate-50 to-slate-200 rounded-3xl p-6 shadow-2xl relative">
               <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
+                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-500" />
                   <div>
-                    <div className="h-3 w-32 bg-slate-200 rounded mb-2" />
-                    <div className="h-2 w-24 bg-slate-100 rounded" />
+                    <div className="h-3 w-32 bg-slate-200 rounded-sm mb-2" />
+                    <div className="h-2 w-24 bg-slate-100 rounded-sm" />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-full" />
-                  <div className="h-4 bg-slate-100 rounded w-3/4" />
-                  <div className="h-4 bg-slate-100 rounded w-5/6" />
+                  <div className="h-4 bg-linear-to-r from-blue-200 to-purple-200 rounded-sm w-full" />
+                  <div className="h-4 bg-slate-100 rounded-sm w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded-sm w-5/6" />
                 </div>
               </div>
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="h-4 w-24 bg-blue-500 rounded" />
-                  <div className="h-4 w-16 bg-purple-500 rounded" />
+                  <div className="h-4 w-24 bg-blue-500 rounded-sm" />
+                  <div className="h-4 w-16 bg-purple-500 rounded-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg"
+                      className="h-20 bg-linear-to-br from-slate-100 to-slate-200 rounded-lg"
                     />
                   ))}
                 </div>
@@ -216,7 +216,7 @@ const FeaturesSection = () => {
         >
           <h2 className="text-4xl sm:text-5xl font-black mb-4">
             One App,{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Zero Hassle
             </span>
           </h2>
@@ -236,7 +236,7 @@ const FeaturesSection = () => {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               className="bg-slate-50 rounded-2xl p-8 hover:transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-slate-200"
             >
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-6">
                 <svg
                   className="w-8 h-8 text-white"
                   fill="none"
@@ -301,7 +301,7 @@ const HowItWorksSection = () => {
   return (
     <section
       id="how-it-works"
-      className="py-24 bg-gradient-to-br from-slate-50 to-blue-50"
+      className="py-24 bg-linear-to-br from-slate-50 to-blue-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -313,7 +313,7 @@ const HowItWorksSection = () => {
         >
           <h2 className="text-4xl sm:text-5xl font-black mb-4">
             How It{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Works
             </span>
           </h2>
@@ -334,10 +334,10 @@ const HowItWorksSection = () => {
               className="relative"
             >
               <div className="bg-white rounded-2xl p-8 hover:transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 shadow-lg">
-                <div className="text-6xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 opacity-20">
+                <div className="text-6xl font-black bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 opacity-20">
                   {step.number}
                 </div>
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
                   <svg
                     className="w-7 h-7 text-white"
                     fill="none"
@@ -402,7 +402,7 @@ const TestimonialsSection = () => {
         >
           <h2 className="text-4xl sm:text-5xl font-black mb-4">
             Don't Just Take{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Our Word
             </span>
           </h2>
@@ -419,7 +419,7 @@ const TestimonialsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 hover:transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-blue-100"
+              className="bg-linear-to-br from-blue-50 to-purple-50 rounded-2xl p-8 hover:transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-blue-100"
             >
               <svg
                 className="w-10 h-10 text-blue-500 mb-4 opacity-50"
@@ -484,7 +484,7 @@ const PricingSection = () => {
   return (
     <section
       id="pricing"
-      className="py-24 bg-gradient-to-br from-slate-50 to-purple-50"
+      className="py-24 bg-linear-to-br from-slate-50 to-purple-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -496,7 +496,7 @@ const PricingSection = () => {
         >
           <h2 className="text-4xl sm:text-5xl font-black mb-4">
             Simple,{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Transparent Pricing
             </span>
           </h2>
@@ -519,13 +519,13 @@ const PricingSection = () => {
                 }`}
               >
                 {plan.highlight && (
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold px-4 py-1 rounded-full inline-block mb-4">
+                  <div className="bg-linear-to-r from-blue-600 to-purple-600 text-white text-sm font-bold px-4 py-1 rounded-full inline-block mb-4">
                     MOST POPULAR
                   </div>
                 )}
                 <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                 <div className="mb-6">
-                  <span className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <span className="text-5xl font-black bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     {plan.price}
                   </span>
                   <span className="text-slate-600">/month</span>
@@ -552,7 +552,7 @@ const PricingSection = () => {
                   onClick={() => navigate('/register')}
                   className={`w-full py-3 rounded-lg font-semibold transition-all ${
                     plan.highlight
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
+                      ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
                       : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
                   }`}
                 >
@@ -574,7 +574,7 @@ const FinalCTASection = () => {
   return (
     <section
       id="cta-final"
-      className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white relative overflow-hidden"
+      className="py-24 bg-linear-to-br from-blue-600 via-purple-600 to-blue-700 text-white relative overflow-hidden"
     >
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />
