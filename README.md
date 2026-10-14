@@ -1,312 +1,87 @@
-# VotePack - Group Travel Made Simple
+# SthiraTech — VotePack
 
-Hey there! 👋 Welcome to VotePack, a travel planning app I built to solve a real problem: coordinating group trips without losing your mind.
+A group-travel planning application prototype for trips, itinerary activities, polls, and shared expenses.
 
-You know how it goes - trying to plan a trip with friends means endless group chats about where to eat, what to do, and who owes who money. VotePack brings all of that chaos into one place where everyone can actually collaborate.
+## What it does
 
-## What Does It Do?
+The repository contains a React/TypeScript frontend and a FastAPI backend with:
 
-This isn't just another trip planner. Here's what makes it different:
+- Account registration and login using JWTs and bcrypt password hashing.
+- Trips, participants, itinerary days, activities, polls, votes, and expense balances.
+- Gemini-backed embeddings and recommendation/consensus code.
+- Stripe Connect onboarding, commitment deposits, and payment webhooks.
+- Optional Redis caching, Brevo email, and Sentry monitoring.
 
-- **Trip Planning**: Create trips, invite your friends, and keep everyone on the same page
-- **Smart Itinerary**: Build your schedule day-by-day with actual times and locations
-- **Group Voting**: Can't decide between tacos or pizza? Let the group vote
-- **Expense Tracking**: Track who paid for what and see who owes who (no more awkward money conversations)
-- **AI Suggestions**: Get smart recommendations for activities based on what your group likes
-- **Payment Integration**: Actually settle up using Stripe (because Venmo requests get ignored)
+External integrations need your own provider accounts and configuration. They may incur charges. Their availability and a complete hosted workflow are not established by the repository alone.
 
-## The Tech Stack
+## Local setup
 
-I went with modern, reliable tools that just work:
-
-**Frontend:**
-- React with TypeScript (because I like catching bugs before they happen)
-- Vite for lightning-fast dev experience
-- Tailwind CSS (utility classes for the win)
-- TanStack Query for server state - it handles caching so you're not hammering the API
-- Zustand for UI state - lightweight and simple
-- React Hook Form + Zod for solid form validation
-- Framer Motion for smooth animations
-
-**Backend:**
-- FastAPI - seriously fast Python framework with auto-generated docs
-- SQLAlchemy 2.0 for talking to the database
-- Pydantic for data validation (FastAPI and Pydantic are best friends)
-- JWT tokens for auth
-- Stripe SDK for payments
-- Google Gemini for AI features
-
-**Database:**
-- PostgreSQL with pgvector extension (for AI embeddings)
-- Supabase hosting (free tier is generous and works great)
-
-## Getting Started
-
-### What You'll Need
-
-- Node.js 18 or newer
-- Python 3.10 or newer
-- A Supabase account (free tier works fine)
-- Stripe account for payments (test mode is free)
-- Google Gemini API key (also free tier)
-
-### Step 1: Clone and Set Up
+The CI files use Python 3.10 and Node.js 20. You also need PostgreSQL with pgvector and permission to create the `vector` extension. Supabase is an optional hosted PostgreSQL provider; a local database definition is included.
 
 ```bash
-# Clone the repo
-git clone https://github.com/wtfashwin/thiraTech-The-VotePack-Platform.git
-cd VotePack
+git clone https://github.com/wtfashwin/SthiraTech-The-VotePack-Platform.git
+cd SthiraTech-The-VotePack-Platform
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r packages/api/requirements.txt
 ```
 
-### Step 2: Database Setup (Supabase)
+On Windows, activate the environment with `.venv\Scripts\activate` instead. `ai_service.py` directly imports NumPy but the requirements file does not list it explicitly; ensure it is installed in the environment and record a compatible version when completing setup.
 
-This is actually easier than running PostgreSQL locally:
-
-1. Head to [supabase.com](https://supabase.com) and create an account
-2. Create a new project (pick a region close to you)
-3. Wait a minute for it to spin up (grab some coffee ☕)
-4. Go to the SQL Editor and run this:
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
-5. Grab your connection string from Settings → Database → Connection String (URI)
-   - It'll look like: `postgresql://postgres:[password]@[host]:5432/postgres`
-
-Pro tip: Supabase gives you a nice dashboard to browse your data, which beats the heck out of command-line PostgreSQL.
-
-### Step 3: Backend Setup
+For the included local database:
 
 ```bash
-cd packages/api
-
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-
-# Activate it
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+docker compose -f packages/docker-compose.yml up -d db
 ```
 
-Now create a `.env` file in the `packages/api` folder:
+It exposes PostgreSQL on port `5433`. Use the database name and local credentials defined in that file. Alternatively, supply your own PostgreSQL/pgvector connection.
+
+Create `.env` at the repository root for the root-level startup command below:
 
 ```env
-DATABASE_URL=postgresql://postgres:[password]@[host]:5432/postgres
-SECRET_KEY=make-this-at-least-32-characters-long-and-random
-GEMINI_API_KEY=your-gemini-api-key
-STRIPE_SECRET_KEY=sk_test_your-stripe-test-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+DATABASE_URL=postgresql://<user>:<password>@localhost:5433/packvote
+SECRET_KEY=<a-random-secret-at-least-32-characters-long>
 FRONTEND_URL=http://localhost:5173
 ```
 
-**Important:** 
-- Replace the DATABASE_URL with your actual Supabase connection string
-- The SECRET_KEY should be random - mash your keyboard for a bit
-- Get your Gemini key from [ai.google.dev](https://ai.google.dev/)
-- Stripe keys come from your Stripe Dashboard → Developers → API keys
+Replace the placeholders. Optional settings are `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDIS_URL`, `BREVO_API_KEY`, and `SENTRY_DSN`.
 
-Start the backend:
+From the repository root, start the API:
+
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn packages.api.main:app --reload --port 8000
 ```
 
-You should see something like "Uvicorn running on http://127.0.0.1:8000". If you visit that URL, you'll get a simple health check. The real magic is at `http://localhost:8000/docs` - FastAPI auto-generates beautiful API documentation.
+This package-qualified entry point matches the backend’s relative imports. Startup creates ORM tables and initializes caching. API documentation is at `http://localhost:8000/docs`.
 
-### Step 4: Frontend Setup
+In another terminal:
 
 ```bash
 cd packages/web
-
-# Install dependencies
-npm install
-
-# Start the dev server
+npm ci
 npm run dev
 ```
 
-Visit `http://localhost:5173` and you should see VotePack running! 🎉
+Open `http://localhost:5173`. The frontend API URLs currently point directly to `http://localhost:8000/api/v1` in `src/api/apiClient.ts`; setting `VITE_API_BASE_URL` does not change them.
 
-## How It Works
+## Usage and source guide
 
-### The Database Magic
+For local exploration, register an account, create a trip, add participants and itinerary activities, then inspect poll and expense flows. Use Stripe test configuration when exploring payment code.
 
-The app uses SQLAlchemy ORM, which means no raw SQL queries (unless you want to). All the tables get created automatically when the backend starts.
+- `packages/api/main.py` — application setup and router registration.
+- `packages/api/routers/` — authentication, trips, itinerary, polls, expenses, AI, and payments.
+- `packages/api/models.py` and `crud.py` — data models and database operations.
+- `packages/api/config.py` — environment settings.
+- `packages/web/src/` — pages, components, API client, and state stores.
+- `packages/api/tests/` — backend tests.
+- `scripts/` — host-specific startup scripts.
 
-Here's what's happening under the hood:
-- **Trips** have many **Participants**
-- Each trip has **Itinerary Days**, which have **Activities**
-- **Polls** let people vote on decisions
-- **Expenses** get split between participants automatically
-- **Recommendations** use AI embeddings (that's where pgvector comes in)
+## Available checks and limitations
 
-The cool part? When you delete a trip, all the related data gets cleaned up automatically thanks to cascade deletes.
+From `packages/web`, `npm run lint` and `npm run build` are defined; no frontend test script is present. Backend CI uses `pytest tests/ -v --cov=. --cov-report=term-missing --cov-report=xml` from `packages/api`, with pytest, pytest-cov, pytest-asyncio, and httpx installed separately.
 
-### Supabase Connection Details
+Backend tests need repair: `tests/conftest.py` imports `Base` from `database.py`, while it is defined in `models.py`. The initial Alembic revision adds indexes to existing tables, so it is not a standalone schema bootstrap. The startup scripts contain host-specific paths and database-host assumptions. `config.py` prints the database connection string; remove that logging before using shared logs.
 
-I set it up so the pgvector extension gets created automatically on first connection (check `database.py`). The connection uses psycopg2-binary driver - I tried asyncpg first but ran into some issues, so I went with what works.
+## License
 
-If you're having connection issues (especially from Render or other hosts), the app forces IPv4 connections. See `scripts/start_uvicorn.sh` for the workaround.
-
-## Project Structure
-
-```
-VotePack/
-├── packages/
-│   ├── api/                    # FastAPI backend
-│   │   ├── routers/           # API endpoints
-│   │   │   ├── auth.py        # Login/register
-│   │   │   ├── trips.py       # Trip management
-│   │   │   ├── itinerary.py   # Schedule stuff
-│   │   │   ├── polling.py     # Group voting
-│   │   │   ├── expenses.py    # Money tracking
-│   │   │   ├── payments.py    # Stripe integration
-│   │   │   └── ai.py          # AI features
-│   │   ├── main.py            # App entry point
-│   │   ├── database.py        # DB connection
-│   │   ├── models.py          # Database models
-│   │   ├── schemas.py         # API request/response schemas
-│   │   ├── crud.py            # Database operations
-│   │   ├── auth.py            # JWT handling
-│   │   └── config.py          # Settings
-│   │
-│   └── web/                   # React frontend
-│       ├── src/
-│       │   ├── api/          # API client & React Query hooks
-│       │   ├── components/   # Reusable UI components
-│       │   ├── pages/        # Main pages
-│       │   ├── store/        # Zustand state management
-│       │   └── types/        # TypeScript definitions
-│       └── package.json
-│
-└── scripts/                   # Deployment scripts
-```
-
-## API Endpoints (The Important Ones)
-
-All endpoints start with `/api/v1`:
-
-**Auth:**
-- `POST /auth/register` - Create account
-- `POST /auth/login` - Get JWT token
-
-**Trips:**
-- `POST /trips/` - Create a trip
-- `GET /trips/{id}` - Get trip details (includes everything)
-- `POST /trips/{id}/participants/` - Add people
-
-**Itinerary:**
-- `POST /itinerary/trips/{id}/days/` - Add a day to the itinerary
-- `POST /itinerary/days/{day_id}/activities/` - Add activity to a day
-
-**Polls:**
-- `POST /trips/{id}/polls/` - Create a poll
-- `POST /polls/options/{id}/vote` - Cast your vote
-
-**Expenses:**
-- `POST /trips/{id}/expenses/` - Log an expense
-- `GET /trips/{id}/expenses/balance/` - See who owes who
-
-**Payments:**
-- `POST /payments/create-intent` - Start a Stripe payment
-- `POST /payments/stripe/webhook` - Stripe calls this (not you)
-
-**AI:**
-- `POST /ai/recommendations` - Get AI suggestions
-- `POST /ai/consensus` - Analyze group preferences
-
-Visit `/docs` when the backend is running to try these out interactively!
-
-## Features Breakdown
-
-### Authentication
-Uses JWT tokens. When you log in, you get a token that you send with every request. The frontend handles this automatically using Axios interceptors.
-
-Passwords are hashed with SHA-256 (I know, SHA-512 would be better, but this works for now).
-
-### Group Voting
-Create a poll, add options, and let people vote. The backend tracks votes and prevents duplicate voting. Simple but effective.
-
-### Expense Tracking
-Here's the thing I'm most proud of: expenses get split automatically based on who's in the trip. You can see balances in real-time - no more "I think you owe me $47.32" conversations.
-
-The algorithm figures out the optimal way to settle up (who should pay who to minimize transactions).
-
-### AI Recommendations
-This is where pgvector shines. The app stores embeddings of destinations and activities, then uses vector similarity search to find relevant suggestions.
-
-It also has a "consensus" feature that analyzes what the whole group wants and suggests activities that'll make everyone happy.
-
-### Stripe Payments
-Instead of manually settling up later, people can actually pay through the app. Uses Stripe's payment intents API - it's secure and handles all the payment stuff for you.
-
-Set up webhooks in Stripe dashboard to notify the app when payments succeed or fail.
-
-## Troubleshooting
-
-**"Can't connect to database"**
-- Double-check your Supabase connection string
-- Make sure you didn't include extra quotes in the .env file
-- Check if you can connect using a tool like pgAdmin or DBeaver
-
-**"Port 8000 already in use"**
-- Something else is using that port. Either kill it or change the port in the uvicorn command
-
-**"Module not found" errors**
-- Backend: Run `pip install -r requirements.txt` again
-- Frontend: Delete `node_modules` and run `npm install`
-
-**"CORS errors in browser"**
-- Check that `FRONTEND_URL` in your backend .env matches where your frontend is running
-- The backend CORS settings allow localhost:5173 by default
-
-**"AI features aren't working"**
-- Verify your Gemini API key is correct
-- Check if you've hit the free tier rate limit (it's pretty generous though)
-
-**"Stripe webhooks failing"**
-- In development, use Stripe CLI to forward webhooks: `stripe listen --forward-to localhost:8000/api/v1/payments/stripe/webhook`
-- Make sure your webhook secret matches
-
-## Deployment
-
-I've deployed this on:
-- **Backend**: Render.com (free tier works, but it sleeps after inactivity)
-- **Frontend**: Vercel (automatic deploys from git, super easy)
-- **Database**: Supabase (already set up!)
-
-**Environment Variables to Set:**
-- Backend needs: `DATABASE_URL`, `SECRET_KEY`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `FRONTEND_URL`
-- Frontend needs: `VITE_API_BASE_URL` (your backend URL)
-
-**Gotcha:** Render's free tier has a cold start delay. First request after inactivity takes ~30 seconds. Paid tier fixes this.
-
-## Things I'd Add Next
-
-- [ ] Real-time updates with WebSockets (so you see votes come in live)
-- [ ] Mobile app (React Native maybe?)
-- [ ] Photo uploads for itinerary items
-- [ ] Export trip to PDF
-- [ ] Multi-currency support (right now it's USD only)
-- [ ] Dark mode (because everyone asks for it)
-- [ ] Email notifications for votes and expenses
-- [ ] Group chat (might be overkill though)
-
-## Final Thoughts
-
-I built this because I was tired of juggling 5 different apps to plan one trip. Is it perfect? Nope. But it works, and it actually solves the problem.
-
-The code is structured to be maintainable - I tried to follow clean architecture principles without going overboard. If something seems weird, it's probably because I learned it the hard way.
-
-Feel free to use this, modify it, or just poke around the code. If you find bugs (you will), well, that's what GitHub issues are for.
-
-Happy travels! ✈️
-
----
-
-**License:** Do whatever you want with it
-
-**Questions?** Check the code comments - I tried to explain the weird parts
+The original README states: “Do whatever you want with it.” No standalone license file is included; that wording is retained here without choosing a new license.
