@@ -74,7 +74,7 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
       >
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600">
               🌐 Import from Social Media
             </h3>
             <p className="text-sm text-gray-600 mt-1">
@@ -103,13 +103,13 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              className="w-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
               disabled={importMutation.isPending}
             >
               {importMutation.isPending ? 'Importing...' : 'Import Activities'}
             </Button>
 
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-sm">
               <p className="text-xs text-blue-800">
                 <strong>How it works:</strong> Our AI will analyze the content and extract potential travel activities, 
                 locations, and recommendations for your trip.
@@ -121,7 +121,7 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
         {/* Imported Activities Display */}
         {importedActivities.length > 0 && (
           <div className="space-y-4">
-            <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded mb-4">
+            <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded-sm mb-4">
               <p className="text-sm text-green-800">
                 ✨ Found {importedActivities.length} activity suggestions! Select the ones you want to add.
               </p>
@@ -160,12 +160,12 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
                   )}
                   <div className="flex flex-wrap gap-2 text-xs">
                     {activity.location && (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm">
                         📍 {activity.location}
                       </span>
                     )}
                     {activity.estimated_duration && (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm">
                         ⏱️ {activity.estimated_duration}
                       </span>
                     )}

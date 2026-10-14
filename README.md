@@ -18,7 +18,7 @@ The browser sends requests to FastAPI under `/api/v1`. Routers validate input, a
 
 ## Getting started
 
-The check workflows use Python 3.10 and Node.js 20. You also need npm and PostgreSQL with pgvector. Docker can provide the included local database; Supabase is an optional hosted alternative.
+The check workflows use Python 3.10 and Node.js 24. You also need npm and PostgreSQL with pgvector. Docker can provide the included local database; Supabase is an optional hosted alternative. The frontend uses Tailwind CSS 4 and needs Safari 16.4+, Chrome 111+, or Firefox 128+.
 
 From a new terminal:
 
@@ -57,7 +57,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. For a first check, register an account, create a trip, and inspect it through `http://localhost:8000/docs`. The `/` API response is a liveness check; it does not verify external integrations.
+Open `http://localhost:5173`. For a first check, register an account, create a trip, and inspect it through `http://localhost:8000/docs`. JSON API requests need `Content-Type: application/json`; login uses a URL-encoded form. The `/` API response is a liveness check; it does not verify external integrations.
 
 ## Checks
 
@@ -92,11 +92,12 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm audit --audit-level=low
 ```
 
 Frontend tests render authentication controls and the loading button. They do not cover a complete browser journey. The build writes `packages/web/dist/`.
 
-Backend CI also runs Bandit over application code and `pip-audit` over the installed environment. Dependency advisories remain unresolved; the security job reports failures instead of swallowing them. These commands are available locally:
+Backend CI also runs Bandit over application code and `pip-audit` over the installed environment. Frontend CI runs `npm audit`. Both audits fail the workflow when they report advisories. These backend commands are available locally:
 
 ```bash
 bandit -r packages/api --exclude packages/api/tests
@@ -121,7 +122,7 @@ Frontend hosting is configured separately. CI produces a build artifact; it does
 
 ## Known limits and contributions
 
-Frontend API URLs currently point to `localhost:8000`; `VITE_API_BASE_URL` is not consumed. The first Alembic revision adds indexes to existing tables and is not a fresh-schema bootstrap. The older host startup scripts contain Render-specific paths and database-host assumptions. Dependency advisories and broader provider/browser integration work remain open.
+Frontend API URLs currently point to `localhost:8000`; `VITE_API_BASE_URL` is not consumed. The first Alembic revision adds indexes to existing tables and is not a fresh-schema bootstrap. The older host startup scripts contain Render-specific paths and database-host assumptions. Broader provider/browser integration work remains open. The landing page contains unverified testimonials and pricing, plus placeholder links; it does not establish real users or a commercial service.
 
 For a change, describe the user-visible problem, keep the diff focused, run the relevant checks above, and include their results. Keep credentials and private data out of code, logs, issues, and pull requests. Use Stripe test configuration when working on payment behavior.
 

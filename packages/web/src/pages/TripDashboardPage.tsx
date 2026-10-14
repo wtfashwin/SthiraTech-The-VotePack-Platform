@@ -100,7 +100,7 @@ export const TripDashboardPage = () => {
   // Loading and error states
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -114,7 +114,7 @@ export const TripDashboardPage = () => {
 
   if (error || !trip) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-purple-600 via-blue-500 to-indigo-600 flex items-center justify-center">
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
           <p className="text-gray-700">Trip not found or failed to load.</p>
@@ -224,14 +224,14 @@ export const TripDashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-8">
+    <div className="min-h-screen bg-linear-to-br from-purple-50 to-blue-50 p-4 md:p-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-3xl shadow-lg p-6 mb-6"
       >
-        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500">
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-blue-500">
           {trip.name}
         </h1>
         <p className="text-gray-600 mt-2">
@@ -599,7 +599,7 @@ export const TripDashboardPage = () => {
       {isCommitmentModalOpen && (
         <Modal onClose={() => setCommitmentModalOpen(false)} title="Pay Commitment Deposit">
           <div className="space-y-4">
-            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded-sm">
               <p className="text-sm text-yellow-800">
                 <strong>Stripe Integration:</strong> In a production environment, this would integrate with Stripe's 
                 Payment Element to securely collect payment information. For the demo, Stripe test mode should be configured.

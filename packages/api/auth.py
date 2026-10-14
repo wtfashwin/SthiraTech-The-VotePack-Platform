@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 
 from . import config, schemas
 
@@ -59,7 +60,7 @@ def decode_access_token(token: str) -> Optional[schemas.TokenData]:
         # Convert string UUID back to UUID object
         user_id = uuid.UUID(user_id_str)
         return schemas.TokenData(user_id=user_id)
-    except JWTError:
+    except InvalidTokenError:
         return None
     except ValueError:  # Invalid UUID format
         return None
