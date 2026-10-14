@@ -125,6 +125,16 @@ Frontend API URLs currently point to `localhost:8000`; `VITE_API_BASE_URL` is no
 
 For a change, describe the user-visible problem, keep the diff focused, run the relevant checks above, and include their results. Keep credentials and private data out of code, logs, issues, and pull requests. Use Stripe test configuration when working on payment behavior.
 
+## Manual deployment
+
+Use **Actions → Request Render deployment → Run workflow** on `main` to request a backend deployment. The repository needs the real service hook configured as the `RENDER_DEPLOY_HOOK_URL` Actions secret. Missing or malformed configuration fails before any request.
+
+The helper reports whether Render accepted the request; check Render's service status to confirm the deployment completed. The workflow does not deploy the frontend. Its five guard tests run without provider requests:
+
+```bash
+python -m unittest discover -s scripts/tests -v
+```
+
 ## License
 
 The original README states: “Do whatever you want with it.” No standalone license file is included; that wording is retained without choosing a new license.
