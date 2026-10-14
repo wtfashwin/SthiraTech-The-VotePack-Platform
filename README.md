@@ -82,6 +82,16 @@ From `packages/web`, `npm run lint` and `npm run build` are defined; no frontend
 
 Backend tests need repair: `tests/conftest.py` imports `Base` from `database.py`, while it is defined in `models.py`. The initial Alembic revision adds indexes to existing tables, so it is not a standalone schema bootstrap. The startup scripts contain host-specific paths and database-host assumptions. `config.py` prints the database connection string; remove that logging before using shared logs.
 
+## Manual deployment
+
+Use **Actions → Request Render deployment → Run workflow** on `main` to request a backend deployment. The repository needs the real service hook configured as the `RENDER_DEPLOY_HOOK_URL` Actions secret. Missing or malformed configuration fails before any request.
+
+The helper reports whether Render accepted the request; check Render's service status to confirm the deployment completed. The workflow does not deploy the frontend. Its five guard tests run without provider requests:
+
+```bash
+python -m unittest discover -s scripts/tests -v
+```
+
 ## License
 
 The original README states: “Do whatever you want with it.” No standalone license file is included; that wording is retained here without choosing a new license.
