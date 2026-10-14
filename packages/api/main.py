@@ -2,17 +2,20 @@
 The main entry point for the PackVote API server.
 """
 import os
+from contextlib import asynccontextmanager
+from typing import Callable, cast
+
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from contextlib import asynccontextmanager
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-import sentry_sdk
+from slowapi.util import get_remote_address
+from starlette.responses import Response
 
-from . import database, models, config, cache
-from .routers import trips, itinerary, polling, expenses, auth, ai, payments
+from . import cache, config, database, models
+from .routers import ai, auth, expenses, itinerary, payments, polling, trips
 
 if config.settings.SENTRY_DSN:
     sentry_sdk.init(
@@ -47,7 +50,10 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(
+    RateLimitExceeded,
+    cast(Callable[[Request, Exception], Response], _rate_limit_exceeded_handler),
+)
 
 # Add CORS middleware
 # Allow both local development and production origins

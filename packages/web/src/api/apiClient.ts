@@ -28,6 +28,7 @@ import type {
   ImportFromUrlResponse,
   CommitmentDepositCreate,
   CommitmentDepositPublic,
+  CommitmentPaymentResponse,
 } from '../types/db';
 
 // Create axios instance with base URL
@@ -36,7 +37,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-} as any); // Type assertion to resolve incorrect type definition
+});
 
 // Add request interceptor to attach JWT token
 apiClient.interceptors.request.use(
@@ -173,8 +174,8 @@ export const importService = {
 
 // --- Payment Services ---
 export const paymentService = {
-  createCommitmentPayment: async (tripId: string, deposit: CommitmentDepositCreate): Promise<any> => {
-    const { data } = await apiClient.post<any>(`/payments/trips/${tripId}/commit`, deposit);
+  createCommitmentPayment: async (tripId: string, deposit: CommitmentDepositCreate): Promise<CommitmentPaymentResponse> => {
+    const { data } = await apiClient.post<CommitmentPaymentResponse>(`/payments/trips/${tripId}/commit`, deposit);
     return data;
   },
 

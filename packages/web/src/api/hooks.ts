@@ -63,7 +63,7 @@ export const useCreateItineraryDay = () => {
 export const useAddActivityToDay = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ dayId, activity, tripId }: { dayId: string; activity: ActivityCreate; tripId: string }) =>
+    mutationFn: ({ dayId, activity }: { dayId: string; activity: ActivityCreate; tripId: string }) =>
       itineraryService.addActivityToDay(dayId, activity),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['trip', variables.tripId] });
@@ -86,7 +86,7 @@ export const useCreatePoll = () => {
 export const useCastVote = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ optionId, vote, tripId }: { optionId: string; vote: VoteCreate; tripId: string }) =>
+    mutationFn: ({ optionId, vote }: { optionId: string; vote: VoteCreate; tripId: string }) =>
       pollingService.castVote(optionId, vote),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['trip', variables.tripId] });

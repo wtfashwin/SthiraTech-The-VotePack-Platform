@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class TripStatus(str, Enum):
     GATHERING = "gathering"
     PENDING = "pending"

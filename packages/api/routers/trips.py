@@ -1,11 +1,10 @@
 # api/routers/trips.py
 import uuid
-from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from .. import crud, schemas, dependencies
-from .. import ai_consensus
+from .. import ai_consensus, crud, dependencies, schemas
 
 router = APIRouter(
     tags=["Trips & Participants"]
@@ -24,14 +23,15 @@ def create_trip(
     # Ensure creator details are passed for the first participant
     if not trip.participants:
         trip.participants.append(schemas.ParticipantCreate(
-            name=current_user.name or "Anonymous", 
+            name=current_user.name or "Anonymous",
             email=current_user.email
         ))
-    
+
     return crud.create_trip(db=db, trip=trip, creator_id=current_user.id)
 
 
-@router.get("/{trip_id}", response_model=schemas.TripPublic)
+@router.get("/trips/{trip_id}", response_model=schemas.TripPublic)
+@router.get("/{trip_id}", response_model=schemas.TripPublic, include_in_schema=False)
 def get_trip(trip_id: uuid.UUID, db: Session = Depends(dependencies.get_db)):
     """
     Gets all details for a specific trip, including participants, itinerary, expenses, etc.
@@ -52,7 +52,7 @@ def add_participant_to_trip(
     db_trip = crud.get_trip_by_id(db, trip_id=trip_id)
     if not db_trip:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
-    
+
     return crud.add_participant_to_trip(db=db, trip_id=trip_id, participant=participant)
 
 

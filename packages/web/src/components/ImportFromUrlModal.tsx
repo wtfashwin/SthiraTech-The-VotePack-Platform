@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { useImportFromUrl, useAddActivityToDay } from '../api/hooks';
+import { useImportFromUrl } from '../api/hooks';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import type { ImportedActivitySuggestion, ImportFromUrlRequest } from '../types/db';
@@ -24,11 +24,9 @@ interface ImportFromUrlModalProps {
 
 export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps) => {
   const [importedActivities, setImportedActivities] = useState<ImportedActivitySuggestion[]>([]);
-  const [selectedDayId, setSelectedDayId] = useState<string>('');
   const [selectedActivities, setSelectedActivities] = useState<Set<number>>(new Set());
 
   const importMutation = useImportFromUrl();
-  const addActivityMutation = useAddActivityToDay();
 
   const { register, handleSubmit, formState: { errors } } = useForm<{ url: string }>({
     resolver: zodResolver(importSchema),
@@ -46,7 +44,7 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
 
       setImportedActivities(result.suggested_activities);
       toast.success(`Found ${result.suggested_activities.length} activity suggestions!`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to import from URL. Please try again.');
     }
   };
@@ -59,41 +57,6 @@ export const ImportFromUrlModal = ({ tripId, onClose }: ImportFromUrlModalProps)
       newSelected.add(index);
     }
     setSelectedActivities(newSelected);
-  };
-
-  const handleAddToItinerary = async () => {
-    if (!selectedDayId) {
-      toast.error('Please select a day to add activities to');
-      return;
-    }
-
-    if (selectedActivities.size === 0) {
-      toast.error('Please select at least one activity');
-      return;
-    }
-
-    try {
-      const promises = Array.from(selectedActivities).map(index => {
-        const activity = importedActivities[index];
-        return addActivityMutation.mutateAsync({
-          dayId: selectedDayId,
-          activity: {
-            title: activity.title,
-            notes: activity.notes || null,
-            location: activity.location || null,
-            start_time: null,
-            end_time: null,
-          },
-          tripId,
-        });
-      });
-
-      await Promise.all(promises);
-      toast.success(`Added ${selectedActivities.size} activities to itinerary!`);
-      onClose();
-    } catch (error) {
-      toast.error('Failed to add activities. Please try again.');
-    }
   };
 
   const getConfidenceColor = (confidence: number) => {

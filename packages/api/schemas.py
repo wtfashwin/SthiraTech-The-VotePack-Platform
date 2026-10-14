@@ -3,11 +3,12 @@ This file defines the final Pydantic schemas for the PackVote API,
 perfectly aligned with the refactored, enterprise-grade models.py.
 """
 import uuid
+from datetime import date, time
 from decimal import Decimal
-from datetime import datetime, date, time
-from typing import List, Optional
 from enum import Enum as PyEnum
-from pydantic import BaseModel, EmailStr, Field, model_validator, ConfigDict
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 # --- Enums & Shared Types ---
 
@@ -21,7 +22,7 @@ class TripStatus(str, PyEnum):
 class UserPublic(BaseModel):
     """Public-facing user information."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     email: EmailStr
     name: Optional[str] = None
@@ -57,12 +58,13 @@ class TripBase(BaseModel):
     end_date: Optional[date] = None
 
 class TripCreate(TripBase):
+    final_destination: Optional[str] = Field(None, max_length=255)
     # When creating a trip, we can optionally add the first participants.
     participants: List['ParticipantCreate'] = []
 
 class TripUpdate(TripBase):
     status: Optional[TripStatus] = None
-    final_destination: Optional[str] = None
+    final_destination: Optional[str] = Field(None, max_length=255)
 
 class ParticipantBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -124,19 +126,19 @@ class ExpenseCreate(ExpenseBase):
 
 class ParticipantPublic(ParticipantBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     trip_id: uuid.UUID
 
 class ExpenseSplitPublic(ExpenseSplitBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     is_settled: bool
 
 class ExpensePublic(ExpenseBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     splits: List[ExpenseSplitPublic] = []
 
@@ -146,39 +148,39 @@ class Balance(BaseModel):
 
 class ActivityPublic(ActivityBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     expense: Optional[ExpensePublic] = None
 
 class ItineraryDayPublic(ItineraryDayBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     activities: List[ActivityPublic] = []
 
 class VotePublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     participant_id: uuid.UUID
 
 class PollOptionPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     content: str
     votes: List[VotePublic] = []
 
 class PollPublic(PollBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     is_active: bool
     options: List[PollOptionPublic] = []
 
 class RecommendationPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     destination_name: str
     description: Optional[str]
@@ -186,7 +188,7 @@ class RecommendationPublic(BaseModel):
 class TripPublic(TripBase):
     """The main, top-level response model for a trip."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     creator_id: uuid.UUID  # Changed to UUID to match BaseModel
     status: TripStatus
@@ -210,7 +212,7 @@ class CommitmentDepositCreate(CommitmentDepositBase):
 
 class CommitmentDepositPublic(CommitmentDepositBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: uuid.UUID
     trip_id: uuid.UUID
     participant_id: uuid.UUID

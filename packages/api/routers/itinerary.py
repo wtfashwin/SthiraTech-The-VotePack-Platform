@@ -5,10 +5,11 @@ API Router for managing Itinerary Days and Activities.
 This file keeps all itinerary-related endpoints organized.
 """
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from .. import crud, schemas, dependencies
-from .. import scraping_service
+
+from .. import crud, dependencies, schemas, scraping_service
 
 router = APIRouter(
     prefix="/itinerary", # Grouping under a common prefix
@@ -27,7 +28,7 @@ def create_new_itinerary_day(
     db_trip = crud.get_trip_by_id(db, trip_id)
     if not db_trip:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
-    
+
     # FIX: The argument name in the CRUD function is 'day', not 'day_data'.
     return crud.create_itinerary_day(db=db, trip_id=trip_id, day=day_data)
 
@@ -62,7 +63,7 @@ def import_activities_from_social_url(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Trip not found"
         )
-    
+
     try:
         result = scraping_service.import_activities_from_url(request.url)
         return result

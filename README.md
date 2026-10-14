@@ -1,22 +1,26 @@
 # SthiraTech — VotePack
 
-A group-travel planning application prototype for trips, itinerary activities, polls, and shared expenses.
+VotePack helps groups plan trips, compare itinerary ideas, vote on activities, and track shared expenses.
 
-## What it does
+The repository is an application prototype. It includes a React/TypeScript frontend, a FastAPI backend, and PostgreSQL models with pgvector support. Payment collection in the frontend is still a placeholder; provider integrations and hosted operation need separate verification.
 
-The repository contains a React/TypeScript frontend and a FastAPI backend with:
+## Capabilities
 
-- Account registration and login using JWTs and bcrypt password hashing.
-- Trips, participants, itinerary days, activities, polls, votes, and expense balances.
-- Gemini-backed embeddings and recommendation/consensus code.
-- Stripe Connect onboarding, commitment deposits, and payment webhooks.
-- Optional Redis caching, Brevo email, and Sentry monitoring.
+- Register and log in with JWT authentication and bcrypt password hashing.
+- Create trips with dates and a destination, add participants and itinerary activities, and record polls and expenses.
+- Generate recommendation embeddings and consensus proposals through optional Gemini configuration.
+- Handle Stripe Connect onboarding, commitment deposit intents, and webhooks in the backend.
+- Optionally use Redis caching, Brevo email, and Sentry monitoring.
 
-External integrations need your own provider accounts and configuration. They may incur charges. Their availability and a complete hosted workflow are not established by the repository alone.
+## How it works
 
-## Local setup
+The browser sends requests to FastAPI under `/api/v1`. Routers validate input, apply authentication where defined, and use SQLAlchemy to read or write PostgreSQL. The application creates ORM tables on startup. Optional services are configured through backend environment settings; they need your own accounts and may incur charges.
 
-The CI files use Python 3.10 and Node.js 20. You also need PostgreSQL with pgvector and permission to create the `vector` extension. Supabase is an optional hosted PostgreSQL provider; a local database definition is included.
+## Getting started
+
+The check workflows use Python 3.10 and Node.js 20. You also need npm and PostgreSQL with pgvector. Docker can provide the included local database; Supabase is an optional hosted alternative.
+
+From a new terminal:
 
 ```bash
 git clone https://github.com/wtfashwin/SthiraTech-The-VotePack-Platform.git
@@ -24,19 +28,12 @@ cd SthiraTech-The-VotePack-Platform
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r packages/api/requirements.txt
-```
-
-On Windows, activate the environment with `.venv\Scripts\activate` instead. `ai_service.py` directly imports NumPy but the requirements file does not list it explicitly; ensure it is installed in the environment and record a compatible version when completing setup.
-
-For the included local database:
-
-```bash
 docker compose -f packages/docker-compose.yml up -d db
 ```
 
-It exposes PostgreSQL on port `5433`. Use the database name and local credentials defined in that file. Alternatively, supply your own PostgreSQL/pgvector connection.
+On Windows, activate `.venv\Scripts\activate` instead. The included database uses host port `5433`; its database name and local credentials are in `packages/docker-compose.yml`.
 
-Create `.env` at the repository root for the root-level startup command below:
+Create `.env` at the repository root, replacing the placeholders, and keep it out of Git:
 
 ```env
 DATABASE_URL=postgresql://<user>:<password>@localhost:5433/packvote
@@ -44,17 +41,15 @@ SECRET_KEY=<a-random-secret-at-least-32-characters-long>
 FRONTEND_URL=http://localhost:5173
 ```
 
-Replace the placeholders. Optional settings are `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDIS_URL`, `BREVO_API_KEY`, and `SENTRY_DSN`.
+The database user needs permission to create the `vector` extension. Optional settings are `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDIS_URL`, `BREVO_API_KEY`, and `SENTRY_DSN`.
 
-From the repository root, start the API:
+Start the API from the repository root with the virtual environment active:
 
 ```bash
 uvicorn packages.api.main:app --reload --port 8000
 ```
 
-This package-qualified entry point matches the backend’s relative imports. Startup creates ORM tables and initializes caching. API documentation is at `http://localhost:8000/docs`.
-
-In another terminal:
+In another terminal, starting at the repository root:
 
 ```bash
 cd packages/web
@@ -62,26 +57,74 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. The frontend API URLs currently point directly to `http://localhost:8000/api/v1` in `src/api/apiClient.ts`; setting `VITE_API_BASE_URL` does not change them.
+Open `http://localhost:5173`. For a first check, register an account, create a trip, and inspect it through `http://localhost:8000/docs`. The `/` API response is a liveness check; it does not verify external integrations.
 
-## Usage and source guide
+## Checks
 
-For local exploration, register an account, create a trip, add participants and itinerary activities, then inspect poll and expense flows. Use Stripe test configuration when exploring payment code.
+Pull requests and pushes to `main` or `develop` run checks when the relevant application or workflow files change. Documentation edits do not trigger deployment. Validation does not use production credentials.
 
-- `packages/api/main.py` — application setup and router registration.
-- `packages/api/routers/` — authentication, trips, itinerary, polls, expenses, AI, and payments.
-- `packages/api/models.py` and `crud.py` — data models and database operations.
-- `packages/api/config.py` — environment settings.
-- `packages/web/src/` — pages, components, API client, and state stores.
-- `packages/api/tests/` — backend tests.
-- `scripts/` — host-specific startup scripts.
+Backend tests need an explicitly configured disposable PostgreSQL/pgvector database. For example, from the repository root:
 
-## Available checks and limitations
+```bash
+docker run --rm -d --name votepack-test-db \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=votepack_test -p 127.0.0.1:5434:5432 pgvector/pgvector:pg16
+docker exec votepack-test-db pg_isready -U postgres
+```
 
-From `packages/web`, `npm run lint` and `npm run build` are defined; no frontend test script is present. Backend CI uses `pytest tests/ -v --cov=. --cov-report=term-missing --cov-report=xml` from `packages/api`, with pytest, pytest-cov, pytest-asyncio, and httpx installed separately.
+Wait until `pg_isready` reports that connections are accepted, then run with the virtual environment active:
 
-Backend tests need repair: `tests/conftest.py` imports `Base` from `database.py`, while it is defined in `models.py`. The initial Alembic revision adds indexes to existing tables, so it is not a standalone schema bootstrap. The startup scripts contain host-specific paths and database-host assumptions. `config.py` prints the database connection string; remove that logging before using shared logs.
+```bash
+export TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5434/votepack_test
+python -m pip install -r packages/api/requirements-dev.txt
+ruff check packages/api --select E,F,W,I --ignore E501
+mypy packages/api --ignore-missing-imports
+python -m pytest packages/api/tests -v --cov=packages/api --cov-report=term-missing
+python -m unittest discover -s scripts/tests -v
+```
+
+API tests use an explicitly mapped disposable schema per test and disable optional providers. The isolation regression creates and removes its own database to prove that existing public tables stay untouched, so the test role needs permission to create databases. Deployment-helper tests replace the HTTP boundary and send no provider requests. Stop the example test database with `docker stop votepack-test-db` when finished.
+
+From `packages/web`:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+Frontend tests render authentication controls and the loading button. They do not cover a complete browser journey. The build writes `packages/web/dist/`.
+
+Backend CI also runs Bandit over application code and `pip-audit` over the installed environment. Dependency advisories remain unresolved; the security job reports failures instead of swallowing them. These commands are available locally:
+
+```bash
+bandit -r packages/api --exclude packages/api/tests
+pip-audit --progress-spinner off
+```
+
+## Manual deployment
+
+The **Request Render deployment** workflow runs only through **Actions → Run workflow**. Select `main` after reviewing its validation results. Configure the repository Actions secret `RENDER_DEPLOY_HOOK_URL` with the actual service hook from Render settings before running it.
+
+Missing or malformed hook configuration fails before any request. The helper sends one bounded POST and fails on HTTP errors. An accepted hook means Render started or queued a deployment; inspect the service’s deployment status before claiming it is live. [Render deploy-hook documentation](https://render.com/docs/deploy-hooks).
+
+Frontend hosting is configured separately. CI produces a build artifact; it does not claim a Vercel deployment.
+
+## Project layout
+
+- `packages/api/` — settings, models, database operations, routers, and tests.
+- `packages/web/` — frontend pages, components, API client, and rendering tests.
+- `packages/docker-compose.yml` — local PostgreSQL/pgvector service.
+- `scripts/request_render_deploy.sh` — manual Render request guard.
+- `.github/workflows/` — backend/frontend validation and manual deployment.
+
+## Known limits and contributions
+
+Frontend API URLs currently point to `localhost:8000`; `VITE_API_BASE_URL` is not consumed. The first Alembic revision adds indexes to existing tables and is not a fresh-schema bootstrap. The older host startup scripts contain Render-specific paths and database-host assumptions. Dependency advisories and broader provider/browser integration work remain open.
+
+For a change, describe the user-visible problem, keep the diff focused, run the relevant checks above, and include their results. Keep credentials and private data out of code, logs, issues, and pull requests. Use Stripe test configuration when working on payment behavior.
 
 ## License
 
-The original README states: “Do whatever you want with it.” No standalone license file is included; that wording is retained here without choosing a new license.
+The original README states: “Do whatever you want with it.” No standalone license file is included; that wording is retained without choosing a new license.

@@ -1,8 +1,9 @@
 """
 Utility functions for security and data sanitization.
 """
-import bleach
 from typing import Optional
+
+import bleach
 
 ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li']
 ALLOWED_ATTRIBUTES = {'a': ['href', 'title']}

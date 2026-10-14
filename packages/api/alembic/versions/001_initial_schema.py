@@ -6,9 +6,6 @@ Create Date: 2025-12-01 00:00:00
 
 """
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from pgvector.sqlalchemy import VECTOR
 
 revision = '001'
 down_revision = None

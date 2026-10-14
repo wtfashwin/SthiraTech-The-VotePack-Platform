@@ -130,7 +130,7 @@ export const TripDashboardPage = () => {
       toast.success('Participant added!');
       setAddParticipantModalOpen(false);
       participantForm.reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add participant');
     }
   };
@@ -145,7 +145,7 @@ export const TripDashboardPage = () => {
       toast.success('Day added to itinerary!');
       setAddDayModalOpen(false);
       dayForm.reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add day');
     }
   };
@@ -165,7 +165,7 @@ export const TripDashboardPage = () => {
       toast.success('Activity added!');
       setAddActivityModalOpen(false);
       activityForm.reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add activity');
     }
   };
@@ -181,7 +181,7 @@ export const TripDashboardPage = () => {
       toast.success('Poll created!');
       setCreatePollModalOpen(false);
       pollForm.reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to create poll');
     }
   };
@@ -191,7 +191,7 @@ export const TripDashboardPage = () => {
       const voteData: VoteCreate = { participant_id: participantId };
       await castVoteMutation.mutateAsync({ optionId, vote: voteData, tripId: tripId! });
       toast.success('Vote cast!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to cast vote');
     }
   };
@@ -218,7 +218,7 @@ export const TripDashboardPage = () => {
       toast.success('Expense added!');
       setAddExpenseModalOpen(false);
       expenseForm.reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add expense');
     }
   };

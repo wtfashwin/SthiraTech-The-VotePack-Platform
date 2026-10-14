@@ -1,10 +1,10 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from typing import List
 import uuid
+from typing import List
 
-from .. import schemas, dependencies, ai_service, models
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from .. import ai_service, dependencies, models, schemas
 
 router = APIRouter(prefix="/ai", tags=["AI & Recommendations"])
 
@@ -18,7 +18,7 @@ def search_similar_activities(
 ):
     """
     Search for activities similar to the query using AI-powered semantic search.
-    
+
     Example queries:
     - "outdoor adventure activities"
     - "romantic dinner spots"
@@ -30,10 +30,10 @@ def search_similar_activities(
         trip_id=trip_id,
         limit=limit
     )
-    
+
     if not activities:
         return []
-    
+
     return [schemas.ActivityPublic.model_validate(activity) for activity in activities]
 
 @router.get("/search/recommendations", response_model=List[schemas.RecommendationPublic])
@@ -46,7 +46,7 @@ def search_similar_recommendations(
 ):
     """
     Search for destination recommendations similar to the query using AI.
-    
+
     Example queries:
     - "tropical beach paradise"
     - "historic European cities"
@@ -58,10 +58,10 @@ def search_similar_recommendations(
         trip_id=trip_id,
         limit=limit
     )
-    
+
     if not recommendations:
         return []
-    
+
     return [schemas.RecommendationPublic.model_validate(rec) for rec in recommendations]
 
 @router.post("/activities/{activity_id}/generate-embedding", status_code=status.HTTP_200_OK)
@@ -75,15 +75,15 @@ def generate_activity_embedding(
     Useful for retroactively adding AI capabilities to existing data.
     """
     activity = db.query(models.Activity).filter(models.Activity.id == activity_id).first()
-    
+
     if not activity:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Activity not found"
         )
-    
+
     embedding = ai_service.generate_activity_embedding(activity)
-    
+
     if embedding:
         # Use setattr to avoid type checker issues with SQLAlchemy columns
         setattr(activity, 'embedding', embedding)
@@ -107,15 +107,15 @@ def generate_recommendation_embedding(
     recommendation = db.query(models.Recommendation).filter(
         models.Recommendation.id == recommendation_id
     ).first()
-    
+
     if not recommendation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Recommendation not found"
         )
-    
+
     embedding = ai_service.generate_recommendation_embedding(recommendation)
-    
+
     if embedding:
         # Use setattr to avoid type checker issues with SQLAlchemy columns
         setattr(recommendation, 'embedding', embedding)

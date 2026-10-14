@@ -4,7 +4,6 @@
  */
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { useTripDeposits } from '../api/hooks';
 import { Button } from './ui/button';
 import type { TripPublic } from '../types/db';
